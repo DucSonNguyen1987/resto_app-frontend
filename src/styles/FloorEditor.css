@@ -1,0 +1,516 @@
+/* src/styles/FloorEditor.css */
+
+/* Conteneur principal de l'éditeur */
+.floor-plan-editor {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px); /* Soustraire la hauteur de l'en-tête */
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+  }
+  
+  .editor-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .editor-header .actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* Conteneur de l'éditeur avec barre d'outils et panneau de propriétés */
+  .editor-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  /* Barre d'outils */
+  .toolbar {
+    width: 250px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+  }
+  
+  .tool-section {
+    margin-bottom: 20px;
+  }
+  
+  .tool-section h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #424242;
+  }
+  
+  .tool-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .tool-btn {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  
+  .tool-btn.active {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+    color: #1976d2;
+  }
+  
+  .tool-btn:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .tool-btn i {
+    margin-right: 8px;
+    font-size: 1rem;
+  }
+  
+  .tool-btn.delete-btn {
+    background-color: #ffebee;
+    border-color: #ffcdd2;
+    color: #d32f2f;
+  }
+  
+  .tool-btn.delete-btn:hover {
+    background-color: #ffcdd2;
+  }
+  
+  .tool-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+  }
+  
+  /* Options des outils */
+  .tool-options {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+  }
+  
+  .tool-options h4 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    color: #424242;
+  }
+  
+  .shape-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .shape-btn {
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+  }
+  
+  .shape-btn:hover {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+  }
+  
+  /* Conteneur du canvas */
+  .canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: #fafafa;
+  }
+  
+  .canvas-container .konvajs-content {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* Panneau de propriétés */
+  .properties-panel {
+    width: 300px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-left: 1px solid #e0e0e0;
+    overflow-y: auto;
+  }
+  
+  .properties-panel h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #424242;
+  }
+  
+  .properties-panel .no-selection {
+    font-style: italic;
+    color: #757575;
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  .properties-panel .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .properties-panel label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #424242;
+  }
+  
+  .properties-panel input,
+  .properties-panel select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .properties-panel input:focus,
+  .properties-panel select:focus {
+    border-color: #90caf9;
+    outline: none;
+  }
+  
+  .properties-panel input[type="number"] {
+    width: 100%;
+  }
+  
+  .properties-panel input[type="color"] {
+    height: 40px;
+    padding: 2px;
+  }
+  
+  .properties-panel .has-error {
+    border-color: #f44336;
+  }
+  
+  .properties-panel .error-text {
+    color: #f44336;
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
+  
+  .properties-panel .form-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Modal pour la création d'un nouveau plan */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #757575;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .form-row .form-group {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Styles pour le visualiseur de plan de salle */
+  .floor-plan-viewer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .viewer-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .info-panel {
+    width: 350px;
+    background-color: #f5f5f5;
+    border-left: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .table-info {
+    padding: 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .table-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .no-selection {
+    padding: 20px;
+    text-align: center;
+    color: #757575;
+  }
+  
+  .no-reservation {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .reservation-list {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+  }
+  
+  .reservation-list h3 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+  }
+  
+  .reservation-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .reservation-item {
+    display: flex;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #fff;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+  }
+  
+  .reservation-item:hover {
+    background-color: #f9f9f9;
+    transform: translateX(3px);
+  }
+  
+  .reservation-item.pending {
+    border-left-color: #90caf9;
+  }
+  
+  .reservation-item.confirmed {
+    border-left-color: #81c784;
+  }
+  
+  .reservation-item.cancelled {
+    border-left-color: #e57373;
+    opacity: 0.7;
+  }
+  
+  .reservation-item.completed {
+    border-left-color: #9575cd;
+  }
+  
+  .reservation-item.arrived {
+    border-left-color: #4caf50;
+  }
+  
+  .reservation-item.no-show {
+    border-left-color: #ef5350;
+    opacity: 0.7;
+  }
+  
+  .reservation-time {
+    width: 60px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .reservation-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .customer-name {
+    font-weight: 500;
+  }
+  
+  .guest-count {
+    font-size: 0.85rem;
+    color: #757575;
+  }
+  
+  .reservation-status {
+    width: 80px;
+    text-align: right;
+    font-size: 0.8rem;
+    align-self: center;
+  }
+  
+  .reservation-status.pending {
+    color: #1e88e5;
+  }
+  
+  .reservation-status.confirmed {
+    color: #43a047;
+  }
+  
+  .reservation-status.cancelled {
+    color: #e53935;
+  }
+  
+  .reservation-status.completed {
+    color: #5e35b1;
+  }
+  
+  .reservation-status.no-show {
+    color: #d32f2f;
+  }
+  
+  .reservation-status.arrived {
+    color: #2e7d32;
+  }
+  
+  /* Détails de la réservation */
+  .reservation-details {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+  }
+  
+  .reservation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .reservation-header h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #fff;
+  }
+  
+  .status-badge.pending {
+    background-color: #1e88e5;
+  }
+  
+  .status-badge.confirmed {
+    background-color: #43a047;
+  }
+  
+  .status-badge.cancelled {
+    background-color: #e53935;
+  }
+  
+  .status-
