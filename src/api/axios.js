@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import { useDispatch, useSelector } from 'react-redux';
 import { setAccessToken } from '../reducers/userSlice';
 
 let store;
@@ -8,9 +7,10 @@ export const injectStore = _store => {
   store = _store
 }
 
-
+// Dans Vite, les variables d'environnement sont accessibles via import.meta.env
+// et doivent être préfixées par VITE_ au lieu de NEXT_PUBLIC_
 const api = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}`,
+    baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000',
     headers: {
         // Overwrite Axios's automatically set Content-Type
         'Content-Type': 'application/json'
@@ -20,10 +20,11 @@ const api = axios.create({
 // Add a request interceptor
 api.interceptors.request.use(
     (config) => {
-        const accessToken = store.getState().user.value.accessToken;
-        console.log('interceptor!', accessToken, store.getState());
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+        if (store) {
+            const accessToken = store.getState()?.user?.value?.accessToken;
+            if (accessToken) {
+                config.headers.Authorization = `Bearer ${accessToken}`;
+            }
         }
         return config;
   },
@@ -34,27 +35,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // const dispatch = useDispatch();
         const originalRequest = error.config;
   
         // If the error status is 403 and there is no originalRequest._retry flag,
         // it means the token has expired and we need to refresh it
-        if (error.response.status === 403 && !originalRequest._retry) {
+        if (error.response?.status === 403 && !originalRequest._retry && store) {
             originalRequest._retry = true;
   
             try {
-                const refreshToken = store.getState().user.value.refreshToken;
-                const response = await api.post('/users/refreshToken', { refreshToken });
-                const { accessToken } = response.data;
+                const refreshToken = store.getState()?.user?.value?.refreshToken;
+                if (refreshToken) {
+                    const response = await api.post('/users/refreshToken', { refreshToken });
+                    const { accessToken } = response.data;
+        
+                    store.dispatch(setAccessToken(accessToken));
     
-                store.dispatch(setAccessToken(accessToken));
-
-                // Retry the original request with the new accessToken
-                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-                return axios(originalRequest);
+                    // Retry the original request with the new accessToken
+                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                    return axios(originalRequest);
+                }
             } catch (error) {
                 // Handle refresh token error or redirect to login
-                console.error(error);
+                console.error('Error refreshing token:', error);
             }
         }
   
@@ -62,4 +64,4 @@ api.interceptors.response.use(
     }
 );
 
-export default api
+export default api;

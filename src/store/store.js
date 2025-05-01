@@ -1,34 +1,32 @@
-import {configureStore, combineReducers} from '@reduxjs/toolkit';
-import {persistStore, persistReducer} from 'redux-persist';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import thunk from 'redux-thunk';
 
-import userReducer from './slices/userSlice';
-import authReducer from './slices/authSlice';
-
+// Importation des reducers
+import authReducer from '../reducers/authSlice';
+import userReducer from '../reducers/userSlice';
 
 // Configuration de la persistance pour les données USER et authentification
+const authPersistConfig = {
+    key: 'auth',
+    storage,
+    whitelist: ['value'] // Persister l'état complet de l'authentification
+};
 
 const userPersistConfig = {
     key: 'user',
     storage,
-    whitelist: ['token', 'refreshToken', 'profile'] // Ne persister que ces champs
-};
-
-const authPersistConfig = {
-    key : 'auth',
-    storage,
-    whitelist: ['isAuthenticated', 'twoFactorRequired']  // Ne persister que ces champs
+    whitelist: ['value'] // Persister l'état complet de l'utilisateur
 };
 
 // Création des reducers persistants 
-const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
 
 // Combinaison des reducers
 const rootReducer = combineReducers({
-    user: persistedUserReducer,
-    auth: persistedAuthReducer
+    auth: persistedAuthReducer,
+    user: persistedUserReducer
 });
 
 // Configuration du store Redux
@@ -36,16 +34,17 @@ export const store = configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({
-            serializableCheck :{
+            serializableCheck: {
                 // Ignore les actions de redux persist dans la vérification de serialisation
-                ignoreActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+                ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+                ignoredPaths: ['register', 'rehydrate']
             },
-        }).concat(thunk),
+        })
 });
 
 // Création du persistor pour redux persist
 export const persistor = persistStore(store);
 
-// injection du store dans l'instance axios pour les intercepteurs
-import {injectStore} from '../api/axios';
+// Injection du store dans l'instance axios pour les intercepteurs
+import { injectStore } from '../api/axios';
 injectStore(store);

@@ -1,24 +1,25 @@
-import React, { UseState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../reducers/authSlice.js';
 import authService from '../../services/authService.js';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
-    const [email, setEmail] = UseState('');
-    const [password, setPassword] = UseState('');
-    const [isLoading, setIsLoading] = UseState(false);
-    const [error, setError] = UseState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const requires2FA = useSelector(state => state.auth.value.requires2FA);
 
-    // Sil e user doit compléter la 2FA, le rediriger vers cette page
-    if (requires2FA) {
-        navigate('/verify-2fa');
-        return null;
-    }
+    // Si le user doit compléter la 2FA, le rediriger vers cette page
+    React.useEffect(() => {
+        if (requires2FA) {
+            navigate('/verify-2fa');
+        }
+    }, [requires2FA, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,13 +27,13 @@ const Login = () => {
         setError('');
 
         try {
-            const result = await authService.login(emaail, password);
+            const result = await authService.login(email, password);
 
             if (result.success) {
                 if (result.requires2FA) {
                     // Si 2FA est requis, stocker le TempToken et rediriger
                     dispatch(login({ requires2FA: true, tempToken: result.tempToken }));
-                    navigate('verify-2fa');
+                    navigate('/verify-2fa');
                 } else {
                     // Sinon, procéder à la connexion normale
                     dispatch(login(result.data));
@@ -42,7 +43,7 @@ const Login = () => {
                 setError(result.error || 'Identifiants invalides');
             }
         } catch (error) {
-            console.error('Erreur lors de la connexion');
+            console.error('Erreur lors de la connexion', error);
             setError('Une erreur est survenue. Veuillez réessayer.')
         } finally {
             setIsLoading(false);
@@ -64,29 +65,29 @@ const Login = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder='Entrez votre email'
                             required
-                            />
-                </div>
+                        />
+                    </div>
                 
-                <div className='form-group'>
-                        <label htmlFor='password'>Email</label>
+                    <div className='form-group'>
+                        <label htmlFor='password'>Mot de passe</label>
                         <input
                             type="password"
                             id='password'
                             value={password}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setPassword(e.target.value)}
                             placeholder='Entrez votre mot de passe'
                             required
-                            />
-                </div>
+                        />
+                    </div>
 
-                {error && <div className='error-message'>{error}</div>}
+                    {error && <div className='error-message'>{error}</div>}
 
-                <button
-                    type='submit'
-                    className='btn btn-primary'
-                    disabled={isLoading}
+                    <button
+                        type='submit'
+                        className='btn btn-primary'
+                        disabled={isLoading}
                     >
-                    {isLoading ? 'Connexion...' : 'Se connecter'}
+                        {isLoading ? 'Connexion...' : 'Se connecter'}
                     </button>
                 </form>
 

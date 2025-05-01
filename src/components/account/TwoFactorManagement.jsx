@@ -1,20 +1,20 @@
-import React, { UseState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { disable2FA, setBackupCodes } from '../../reducers/authSlice';
 import twoFactorService from '../../services/twoFactorService';
 import { Link } from 'react-router-dom';
+import '../../styles/2fa.css';
 
-const twoFactorManagement = () => {
-    const [password, setPassword] = UseState('');
-    const [showDisableForm, setshowDisabledForm] = UseState(false);
-    const [showBackupCodes, setshowBackupCodes] = UseState(false);
-    const [isLoading, setIsLoading] = UseState(false);
-    const [error, setError] = UseState('');
-    const [successMessage, setSuccessMessage] = UseState('');
+const TwoFactorManagement = () => {
+    const [password, setPassword] = useState('');
+    const [showDisableForm, setShowDisableForm] = useState(false);
+    const [showBackupCodes, setShowBackupCodes] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const dispatch = useDispatch();
-    const { twoFactorEnabled, backUpCodes, role } = UseSelector(state => state.auth.value);
-
+    const { twoFactorEnabled, backupCodes, role } = useSelector(state => state.auth.value);
 
     // Check si l'utilisateur est ADMIN ou OWNER 
     const requiresTwoFactor = role === 'ADMIN' || role === 'OWNER';
@@ -30,9 +30,9 @@ const twoFactorManagement = () => {
 
             if (result.success) {
                 dispatch(disable2FA());
-                setshowDisabledForm(false);
+                setShowDisableForm(false);
                 setPassword('');
-                setSuccessMessage('L\'authentification à deux facteurs a été désactivée avec succès.')
+                setSuccessMessage('L\'authentification à deux facteurs a été désactivée avec succès.');
             } else {
                 setError(result.error || 'Erreur lors de la désactivation');
             }
@@ -53,23 +53,22 @@ const twoFactorManagement = () => {
             const result = await twoFactorService.generateBackupCodes();
 
             if (result.success) {
-                dispatch(setBackupCodes(result.data.backUpCodes));
-                setshowBackupCodes(true);
+                dispatch(setBackupCodes(result.data.backupCodes));
+                setShowBackupCodes(true);
                 setSuccessMessage('De nouveaux codes de secours ont été générés avec succès.');
             } else {
                 setError(result.error || 'Erreur lors de la génération des codes.');
             }
         } catch (error) {
-            console.error('Erreur lors de la génération des codes de secours.');
+            console.error('Erreur lors de la génération des codes de secours:', error);
             setError('Une erreur est survenue. veuillez réessayer');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // rendu pour les USERS
-
-    const renderEnabled = () => {
+    // Rendu pour les USERS avec 2FA activée
+    const renderEnabled = () => (
         <div className='two-factor-enabled'>
             <div className='status-badge success'>
                 <span className='icon'>✔</span>
@@ -80,8 +79,8 @@ const twoFactorManagement = () => {
                 <button
                     className='btn btn-secondary'
                     onClick={() => {
-                        setshowBackupCodes(true);
-                        setshowDisabledForm(false);
+                        setShowBackupCodes(true);
+                        setShowDisableForm(false);
                     }}
                 >
                     Voir les codes de secours
@@ -98,21 +97,21 @@ const twoFactorManagement = () => {
                     <button
                         className='btn btn-danger'
                         onClick={() => {
-                            setshowBackupCodes(true);
-                            setshowBackupCodes(false);
+                            setShowDisableForm(true);
+                            setShowBackupCodes(false);
                         }}
                     >
                         Désactiver la 2FA
                     </button>
                 )}
 
-                {showBackupCodes && backUpCodes.length > 0 && (
+                {showBackupCodes && backupCodes && backupCodes.length > 0 && (
                     <div className='backup-codes-container'>
                         <h3>Vos Codes de secours</h3>
                         <p>Conservez ces codes dans un endroit sûr.</p>
 
                         <div className='backup-codes-grid'>
-                            {backUpCodes.map((code, i) => (
+                            {backupCodes.map((code, i) => (
                                 <div key={i} className='backup-code'>
                                     {code}
                                 </div>
@@ -127,7 +126,7 @@ const twoFactorManagement = () => {
                         </button>
                         <button
                             className='btn btn-link'
-                            onClick={() => setshowBackupCodes(false)}
+                            onClick={() => setShowBackupCodes(false)}
                         >
                             Fermer
                         </button>
@@ -156,9 +155,16 @@ const twoFactorManagement = () => {
                                 <button
                                     type='button'
                                     className='btn btn-secondary'
-                                    onClick={() => setshowDisabledForm(false)}
+                                    onClick={() => setShowDisableForm(false)}
                                 >
-                                    {isLoading ? 'Désactivation ...' : 'Confirmer la désactivation'}
+                                    Annuler
+                                </button>
+                                <button
+                                    type='submit'
+                                    className='btn btn-danger'
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Désactivation...' : 'Confirmer la désactivation'}
                                 </button>
                             </div>
                         </form>
@@ -166,23 +172,22 @@ const twoFactorManagement = () => {
                 )}
             </div>
         </div>
-    };
+    );
 
-    // rendu pour les USERS sans 2FA
-
+    // Rendu pour les USERS sans 2FA
     const renderDisabled = () => (
         <div className='two-factor-disabled'>
-            <div className={`sataus-badge ${requiresTwoFactor ? 'warning' : 'neutral'}`}>
+            <div className={`status-badge ${requiresTwoFactor ? 'warning' : 'neutral'}`}>
                 <span className='icon'>{requiresTwoFactor ? '!' : 'i'}</span>
                 <span>
                     {requiresTwoFactor
-                    ? 'L\'authentification à deux facteurs est requise pour votre rôle'
-                    : 'L\'authentification à deux facteurs n\'est pas activée'}
+                        ? 'L\'authentification à deux facteurs est requise pour votre rôle'
+                        : 'L\'authentification à deux facteurs n\'est pas activée'}
                 </span>
             </div>
 
             <p>
-                L'authentification à deux facteurs augmeente le niveau de sécurité...
+                L'authentification à deux facteurs augmente le niveau de sécurité de votre compte en ajoutant une couche de protection supplémentaire.
             </p>
             {requiresTwoFactor && (
                 <div className='required-notice'>
@@ -192,7 +197,7 @@ const twoFactorManagement = () => {
                 </div>
             )}
 
-            <Link to='/setup-2fa' className= 'btn btn-primary'>
+            <Link to='/setup-2fa' className='btn btn-primary'>
                 Configurer l'authentification à deux facteurs
             </Link>
         </div>
@@ -203,7 +208,7 @@ const twoFactorManagement = () => {
             <h2>Authentification à deux facteurs</h2>
 
             {successMessage && (
-                <div className='success-mesage'>
+                <div className='success-message'>
                     {successMessage}
                 </div>
             )}
@@ -219,4 +224,4 @@ const twoFactorManagement = () => {
     );
 };
 
-export default twoFactorManagement;
+export default TwoFactorManagement;

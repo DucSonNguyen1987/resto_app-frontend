@@ -1,20 +1,18 @@
-import React, {useState} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {verify2FA} from '../../reducers/authSlice';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { verify2FA } from '../../reducers/authSlice';
 import twoFactorService from '../../services/twoFactorService';
-import {useNavigate} from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 
 const TwoFactorVerify = () => {
     const [token, setToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState ('');
-    const [isUsingBackupCode, setIsUsingBakupCode] = useState(false);
-
+    const [error, setError] = useState('');
+    const [isUsingBackupCode, setIsUsingBackupCode] = useState(false);
 
     const tempToken = useSelector(state => state.auth.value.tempToken);
     const dispatch = useDispatch();
-    const navigate= useNavigate();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,10 +37,10 @@ const TwoFactorVerify = () => {
     };
 
     const toggleBackupCode = () => {
-            setIsUsingBakupCode(!isUsingBackupCode);
-            setToken('');
-            setError('');
-        };
+        setIsUsingBackupCode(!isUsingBackupCode);
+        setToken('');
+        setError('');
+    };
 
     return (
         <div className="auth-container">
@@ -64,7 +62,7 @@ const TwoFactorVerify = () => {
                         type='text'
                         id='token'
                         value={token}
-                        onChange={(e)=> setToken(e.target.value)}
+                        onChange={(e) => setToken(e.target.value)}
                         placeholder={isUsingBackupCode ? 'Entrez le code de secours' : "Entrez le code à 6 chiffres"}
                         required
                         autoComplete='off'
@@ -76,10 +74,10 @@ const TwoFactorVerify = () => {
                     <button
                         type='submit'
                         className='btn btn-primary'
-                        disabled= {isLoading}
-                        >
+                        disabled={isLoading}
+                    >
                         {isLoading ? 'Vérification...' : 'Vérifier'}
-                        </button>
+                    </button>
                 </form>
 
                 <div className='auth-footer'>
@@ -89,11 +87,11 @@ const TwoFactorVerify = () => {
                             {isUsingBackupCode
                             ? 'Utiliser le code d\'authentification'
                             : 'Utiliser un code de secours'}
-                        </button>
+                    </button>
                 </div>
             </div>
         </div>
-    )
+    );
 };
 
 export default TwoFactorVerify;
