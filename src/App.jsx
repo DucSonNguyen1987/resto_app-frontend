@@ -1,5 +1,4 @@
 import React from "react";
-import { useDispatch } from "react-redux";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import './App.css';
@@ -11,37 +10,19 @@ import TwoFactorVerify from './components/auth/TwoFactorVerify';
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
 import Navbar from "./components/common/NavBar";
 
-// Composant pour la gestion du 2FA
+// Composants pour la gestion du compte
 import TwoFactorManagement from './components/account/TwoFactorManagement';
+import AccountSettings from './components/account/AccountSettings';
 
 // Composants pour les plans de salle
 import FloorPlanList from './components/floor/FloorPlanList';
 import FloorPlanViewer from './components/floor/FloorPlanViewer';
 import FloorPlanEditor from './features/floor_editor/FloorPlanEditor';
 
-// Composants provisoires pour les routes manquantes
-const Dashboard = () => {
-  const dispatch = useDispatch();
+// Dashboard
+import Dashboard from './components/dashboard/Dashboard';
 
-  const handleLogout = () => {
-    dispatch({ type: 'auth/logout' }); // Action pour déconnecter l'utilisateur
-  };
-
-  return (
-    <div className="card">
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="btn btn-outline-primary"
-      >
-        Se déconnecter
-      </button>
-      <h2>Dashboard</h2>
-      <p>Tableau de bord de l'application</p>
-    </div>
-  );
-};
-const AccountSettings = () => <div className="card"><h2>Paramètres du compte</h2><p>Gérez vos paramètres de compte</p></div>;
+// Composant pour la page 404
 const NotFound = () => <div className="card"><h2>404 - Page non trouvée</h2><p>La page que vous recherchez n'existe pas.</p></div>;
 
 // Protège les routes nécessitant une authentification
@@ -152,7 +133,7 @@ function App() {
         <Route path="/" element={
           <PrivateRoute>
             <RequiresTwoFactorCheck>
-              {<Dashboard />}
+              <Dashboard />
             </RequiresTwoFactorCheck>
           </PrivateRoute>
         } />
