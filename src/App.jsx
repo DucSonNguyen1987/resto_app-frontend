@@ -1,4 +1,5 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import './App.css';
@@ -8,12 +9,33 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import TwoFactorVerify from './components/auth/TwoFactorVerify';
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
+//import Navbar from "./components/common/NavBar";
 
 // Composant pour la gestion du 2FA
 import TwoFactorManagement from './components/account/TwoFactorManagement';
 
 // Composants provisoires pour les routes manquantes
-const Dashboard = () => <div className="card"><h2>Dashboard</h2><p>Tableau de bord de l'application</p></div>;
+const Dashboard = () => {
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch({ type: 'auth/logout' }); // Action pour déconnecter l'utilisateur
+  };
+
+  return (
+    <div className="card">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="btn btn-outline-primary"
+      >
+        Se déconnecter
+      </button>
+      <h2>Dashboard</h2>
+      <p>Tableau de bord de l'application</p>
+    </div>
+  );
+};
 const AccountSettings = () => <div className="card"><h2>Paramètres du compte</h2><p>Gérez vos paramètres de compte</p></div>;
 const NotFound = () => <div className="card"><h2>404 - Page non trouvée</h2><p>La page que vous recherchez n'existe pas.</p></div>;
 
@@ -51,6 +73,8 @@ const RequiresTwoFactorCheck = ({children}) => {
 function App() {
   return (
    <Router>
+   <div className="app-container">
+   {/* <Navbar />*/}
     <div className="main-content">
       <Routes>
         {/* Routes publiques */}
@@ -98,7 +122,7 @@ function App() {
         <Route path="/" element={
           <PrivateRoute>
             <RequiresTwoFactorCheck>
-              <Dashboard />
+              {<Dashboard />}
             </RequiresTwoFactorCheck>
           </PrivateRoute>
         } />
@@ -106,6 +130,7 @@ function App() {
         {/* Page 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </div>
     </div>
    </Router>
   );
