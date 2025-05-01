@@ -5,7 +5,7 @@ import './App.css';
 
 // Composants d'authentification
 import Login from './components/auth/Login';
-//import Register from './components/auth/Register';
+import Register from './components/auth/Register';
 import TwoFactorVerify from './components/auth/TwoFactorVerify';
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
 

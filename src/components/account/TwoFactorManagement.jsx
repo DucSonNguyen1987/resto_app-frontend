@@ -1,5 +1,5 @@
 import React, { UseState } from 'react';
-import { UseDispatch, UseSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { disable2FA, setBackupCodes } from '../../reducers/authSlice';
 import twoFactorService from '../../services/twoFactorService';
 import { Link } from 'react-router-dom';
@@ -12,7 +12,7 @@ const twoFactorManagement = () => {
     const [error, setError] = UseState('');
     const [successMessage, setSuccessMessage] = UseState('');
 
-    const dispatch = UseDispatch();
+    const dispatch = useDispatch();
     const { twoFactorEnabled, backUpCodes, role } = UseSelector(state => state.auth.value);
 
 

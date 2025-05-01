@@ -1,6 +1,6 @@
 import axios from 'axios';
 // import { useDispatch, useSelector } from 'react-redux';
-import { setAccessToken } from '../reducers/user';
+import { setAccessToken } from '../reducers/userSlice';
 
 let store;
 
