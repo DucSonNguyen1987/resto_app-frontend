@@ -1,81 +1,144 @@
+// src/components/common/NavBar.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { logout, getCurrentUser } from '../../services/authService.js';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../reducers/authSlice';
 
-const Navbar = () => {
+const NavBar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  // Récupérer les informations d'authentification
+  const { isAuthenticated, username, firstname, lastname, email, role } = useSelector(state => state.auth.value);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-    }
+  const handleLogout = () => {
+    // Déconnecter l'utilisateur
+    dispatch(logout());
+    // Rediriger vers la page de connexion
+    navigate('/login');
+    // Fermer le dropdown
+    setDropdownOpen(false);
   };
+
+  // Ne pas afficher la navbar sur les pages d'authentification
+  if (['/login', '/register', '/verify-2fa'].includes(location.pathname)) {
+    return null;
+  }
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand">
-        Restaurant Manager
-      </Link>
+      <div className="container">
+        <Link to="/" className="navbar-brand">
+          Restaurant Manager
+        </Link>
 
-      <div className="navbar-nav">
-        {currentUser ? (
-          <div className="user-dropdown">
-            <button className="user-dropdown-toggle" onClick={toggleDropdown}>
-              <span className="user-name">{currentUser.username || currentUser.firstname || 'Utilisateur'}</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ marginLeft: '8px' }}
+        <div className="nav-links">
+          {isAuthenticated && (
+            <>
+              <Link 
+                to="/dashboard" 
+                className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
               >
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
+                Dashboard
+              </Link>
+              
+              {['ADMIN', 'OWNER', 'MANAGER'].includes(role) && (
+                <>
+                  <Link 
+                    to="/floor-plans" 
+                    className={`nav-link ${location.pathname.includes('/floor-plans') ? 'active' : ''}`}
+                  >
+                    Plans de salle
+                  </Link>
+                  <Link 
+                    to="/reservations" 
+                    className={`nav-link ${location.pathname.includes('/reservations') ? 'active' : ''}`}
+                  >
+                    Réservations
+                  </Link>
+                </>
+              )}
+            </>
+          )}
+        </div>
 
-            {dropdownOpen && (
-              <div className="user-dropdown-menu">
-                <div className="user-dropdown-item" style={{ fontWeight: 'bold' }}>
-                  {currentUser.firstname} {currentUser.lastname}
+        <div className="navbar-right">
+          {isAuthenticated ? (
+            <div className="user-menu">
+              <button className="user-menu-button" onClick={toggleDropdown}>
+                <span>{firstname || username || 'Utilisateur'}</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              
+              {dropdownOpen && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-header">
+                    <div className="user-name">{firstname} {lastname}</div>
+                    <div className="user-email">{email}</div>
+                    <div className="user-role">{role}</div>
+                  </div>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <Link 
+                    to="/account-settings" 
+                    className="dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Paramètres du compte
+                  </Link>
+                  
+                  <Link 
+                    to="/2fa-management" 
+                    className="dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Gestion 2FA
+                  </Link>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <button 
+                    className="dropdown-item text-danger"
+                    onClick={handleLogout}
+                  >
+                    Se déconnecter
+                  </button>
                 </div>
-                <div className="user-dropdown-item" style={{ color: '#666', fontSize: '0.9rem' }}>
-                  {currentUser.email}
-                </div>
-                <div className="user-dropdown-divider"></div>
-                <Link to="/profile" className="user-dropdown-item" onClick={() => setDropdownOpen(false)}>
-                  Mon Profil
-                </Link>
-                <div className="user-dropdown-divider"></div>
-                <button className="user-dropdown-item" onClick={handleLogout} style={{ width: '100%', textAlign: 'left' }}>
-                  Se déconnecter
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="nav-item">
-            <Link to="/login" className="btn btn-outline-primary">
-              Se connecter
-            </Link>
-          </div>
-        )}
+              )}
+            </div>
+          ) : (
+            <div className="auth-buttons">
+              <Link to="/login" className="btn btn-primary btn-sm">
+                Se connecter
+              </Link>
+              <Link to="/register" className="btn btn-outline-primary btn-sm">
+                S'inscrire
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
 };
 
-export default Navbar;
+export default NavBar;

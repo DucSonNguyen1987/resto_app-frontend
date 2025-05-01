@@ -1,28 +1,27 @@
+// src/features/floor_editor/FloorPlanEditor.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Circle, Text, Group, Line } from 'react-konva';
-import { useSelector, useDispatch } from 'react-redux';
+//import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // Importations des services API
 import floorPlanService from '../../services/floorPlanService';
 import tableService from '../../services/tableService';
 
-// Composants de l'étditeur
+// Composants de l'éditeur
 import TableShape from './TableShape';
 import ObstacleShape from './ObstacleShape';
 import Toolbar from './Toolbar';
 import PropertiesPanel from './PropertiesPanel';
 
-
 const FloorPlanEditor = () => {
     const { floorPlanId } = useParams();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
+    //const dispatch = useDispatch();
     const stageRef = useRef();
-    const user = useSelector(state => state.user.value);
+   // const user = useSelector(state => state.user.value);
 
-    // Etats pour le plan de salle
-
+    // États pour le plan de salle
     const [floorPlan, setFloorPlan] = useState(null);
     const [tables, setTables] = useState([]);
     const [obstacles, setObstacles] = useState([]);
@@ -36,7 +35,6 @@ const FloorPlanEditor = () => {
     const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
     // Chargement initial des données
-
     useEffect(() => {
         const loadFloorPlan = async () => {
             try {
@@ -86,32 +84,32 @@ const FloorPlanEditor = () => {
         setObstacles(updatedObstacles);
     };
 
-    // Sauvegarde des modifications
-    const handleSave = async () => {
-        try {
-            // Sauvegarde du plan avec les obstacles
-            const floorPlanResponse = await floorPlanService.updateFloorPlan(floorPlanId, {
-                ...floorPlan,
-                obstacles
-            });
+    
+// Sauvegarde des modifications
+const handleSave = async () => {
+  try {
+      // Sauvegarde du plan avec les obstacles
+      await floorPlanService.updateFloorPlan(floorPlanId, {
+          ...floorPlan,
+          obstacles
+      });
 
-            // Sauvegarde des tables
-            for (const table of tables) {
-                await tableService.updateTable(table._id, table);
-            }
+      // Sauvegarde des tables
+      for (const table of tables) {
+          await tableService.updateTable(table._id, table);
+      }
 
-            // Notification et redirection
-            alert('Plan de salle sauvegardé avec succès');
-        } catch (error) {
-            console.error('Erreur lors de la sauvegarde:', error);
-            setError('Erreur lors de la sauvegarde. veuillez réessayer.')
-        }
-    };
+      // Notification et redirection
+      alert('Plan de salle sauvegardé avec succès');
+  } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      setError('Erreur lors de la sauvegarde. veuillez réessayer.')
+  }
+};
 
     // Ajout d'une nouvelle table
-    handleAddTable = (tableData) => {
-        // générer un Id temp pour la nouvelle table
-
+    const handleAddTable = (tableData) => {
+        // Générer un ID temporaire pour la nouvelle table
         const tempId = `temp_${Date.now()}`;
 
         const newTable = {
@@ -130,9 +128,9 @@ const FloorPlanEditor = () => {
     };
 
     // Ajout d'un nouvel obstacle
-    const handleAddObstacle (obstacleData) => {
+    const handleAddObstacle = (obstacleData) => {
         const newObstacle = {
-            type: obstacleData.type || 'null',
+            type: obstacleData.type || 'wall',
             position: obstacleData.position || { x: 100, y: 100 },
             dimensions: obstacleData.dimensions || { width: 100, height: 20 },
             rotation: obstacleData.rotation || 0,
@@ -144,7 +142,7 @@ const FloorPlanEditor = () => {
         setSelectedElement({ ...newObstacle, type: 'obstacle' });
     };
 
-    // Suppression d'uné lément
+    // Suppression d'un élément
     const handleDeleteElement = () => {
         if (!selectedElement) return;
 
@@ -165,24 +163,23 @@ const FloorPlanEditor = () => {
         setSelectedElement(null);
     };
 
-
     // Gestion du zoom
     const handleWheel = (e) => {
         e.evt.preventDefault();
 
-        const scaleBy= 1.1;
+        const scaleBy = 1.1;
         const stage = stageRef.current;
         const oldScale = stage.scaleX();
 
         const pointerPosition = stage.getPointerPosition();
         const mousePointTo = {
             x: (pointerPosition.x - stage.x()) / oldScale,
-            y: (pointerPosition.y - stage.x()) / oldScale
+            y: (pointerPosition.y - stage.y()) / oldScale
         };
 
         const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
-        stage.scale({x: newScale , y: newScale});
+        stage.scale({x: newScale, y: newScale});
 
         const newPos = {
             x: pointerPosition.x - mousePointTo.x * newScale,
@@ -205,7 +202,7 @@ const FloorPlanEditor = () => {
     }
 
     if (!floorPlan) {
-        return <div> Aucun plan de salle trouvé</div>
+        return <div>Aucun plan de salle trouvé</div>
     }
 
     return (
@@ -338,6 +335,6 @@ const FloorPlanEditor = () => {
           </div>
         </div>
       );
-    };
-    
-    export default FloorPlanEditor;
+};
+
+export default FloorPlanEditor;

@@ -9,10 +9,15 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import TwoFactorVerify from './components/auth/TwoFactorVerify';
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
-//import Navbar from "./components/common/NavBar";
+import Navbar from "./components/common/NavBar";
 
 // Composant pour la gestion du 2FA
 import TwoFactorManagement from './components/account/TwoFactorManagement';
+
+// Composants pour les plans de salle
+import FloorPlanList from './components/floor/FloorPlanList';
+import FloorPlanViewer from './components/floor/FloorPlanViewer';
+import FloorPlanEditor from './features/floor_editor/FloorPlanEditor';
 
 // Composants provisoires pour les routes manquantes
 const Dashboard = () => {
@@ -74,8 +79,8 @@ function App() {
   return (
    <Router>
    <div className="app-container">
-   {/* <Navbar />*/}
-    <div className="main-content">
+     <Navbar />
+     <div className="main-content">
       <Routes>
         {/* Routes publiques */}
         <Route path="/login" element={<Login/>} />
@@ -93,6 +98,31 @@ function App() {
           <Requires2FARoute>
             <TwoFactorVerify />
           </Requires2FARoute>
+        } />
+
+        {/* Routes des plans de salle */}
+        <Route path="/floor-plans" element={
+          <PrivateRoute>
+            <RequiresTwoFactorCheck>
+              <FloorPlanList />
+            </RequiresTwoFactorCheck>
+          </PrivateRoute>
+        } />
+        
+        <Route path="/floor-plans/view/:floorPlanId" element={
+          <PrivateRoute>
+            <RequiresTwoFactorCheck>
+              <FloorPlanViewer />
+            </RequiresTwoFactorCheck>
+          </PrivateRoute>
+        } />
+        
+        <Route path="/floor-plans/edit/:floorPlanId" element={
+          <PrivateRoute>
+            <RequiresTwoFactorCheck>
+              <FloorPlanEditor />
+            </RequiresTwoFactorCheck>
+          </PrivateRoute>
         } />
 
         {/* Routes privées */}
