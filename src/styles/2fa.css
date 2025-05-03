@@ -56,7 +56,8 @@ h3 {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 2vh;
+  color: #595959;
   background-color: #F2F2F2;
 }
 

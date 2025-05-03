@@ -19,8 +19,8 @@ import mockTableService from './mockTableService';
 import mockReservationService from './mockReservationService';
 
 // Détermine si l'application doit utiliser les services de simulation
-// On peut définir cette valeur dans le .env ou la basculer dynamiquement
-const USE_MOCK_SERVICES = import.meta.env.VITE_USE_MOCK_SERVICES === 'true' || true;
+const USE_MOCK_SERVICES = import.meta.env.VITE_USE_MOCK_SERVICES === 'true';
+
 
 // Exporte les services appropriés en fonction de la configuration
 export const getAuthService = () => USE_MOCK_SERVICES ? mockAuthService : authService;

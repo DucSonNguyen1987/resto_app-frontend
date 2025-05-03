@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { set2FASetupData, enable2FA } from '../../reducers/authSlice.js';
-import twoFactorService from '../../services/twoFactorService.js';
+import twoFactorService from '../../services/mockTwoFactorService.jsx';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/2fa.css';
 
 const TwoFactorSetup = () => {
     const [step, setStep] = useState(1);
@@ -15,7 +16,7 @@ const TwoFactorSetup = () => {
     const { setupQRCode, setupSecret, backupCodes } = useSelector(state => state.auth.value);
 
     useEffect(() => {
-        // Charger les données de configuration au montage
+        // Charger les données de configuration au montage si nécessaire
         if (step === 1 && !setupQRCode) {
             loadSetupData();
         }
@@ -29,7 +30,11 @@ const TwoFactorSetup = () => {
             const result = await twoFactorService.setup2FA();
 
             if (result.success) {
-                dispatch(set2FASetupData(result.data));
+                // Mise à jour du store Redux avec les données reçues
+                dispatch(set2FASetupData({
+                    qrCode: result.data.qrCode,
+                    secret: result.data.secret
+                }));
             } else {
                 setError(result.error || 'Erreur lors du chargement des données de configuration');
             }
@@ -46,17 +51,29 @@ const TwoFactorSetup = () => {
         setIsLoading(true);
         setError('');
 
+        // Validation simple du token
+        if (!token || token.length !== 6 || !/^\d+$/.test(token)) {
+            setError('Veuillez entrer un code à 6 chiffres valide');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const result = await twoFactorService.verify2FA(token);
 
             if (result.success) {
-                dispatch(enable2FA(result.data));
-                setStep(3); // Passer à l'affichage des codes de secours
+                // Activer la 2FA dans Redux
+                dispatch(enable2FA({
+                    backupCodes: result.data.backupCodes
+                }));
+                
+                // Passer à l'étape d'affichage des codes de secours
+                setStep(3);
             } else {
                 setError(result.error || 'Code invalide. Veuillez réessayer');
             }
         } catch (error) {
-            console.error('Erreur lors de la vérification 2FA:', error)
+            console.error('Erreur lors de la vérification 2FA:', error);
             setError('Une erreur est survenue. Veuillez réessayer.');
         } finally {
             setIsLoading(false);
@@ -90,12 +107,12 @@ const TwoFactorSetup = () => {
                 onClick={() => setStep(2)}
                 disabled={isLoading || !setupQRCode}
             >
-                Continuer
+                {isLoading ? 'Chargement...' : 'Continuer'}
             </button>
         </div>
     );
 
-    // Etape 2 Vérification du code
+    // Etape 2: Vérification du code
     const renderVerifyStep = () => (
         <div className='verify-step'>
             <h3>Étape 2: Vérification</h3>
@@ -114,6 +131,8 @@ const TwoFactorSetup = () => {
                         placeholder='Entrez le code à 6 chiffres'
                         required
                         autoComplete='off'
+                        maxLength="6"
+                        pattern="\d{6}"
                     />
                 </div>
 
@@ -140,13 +159,13 @@ const TwoFactorSetup = () => {
         </div>
     );
 
-    // Etape 3 Affichage des codes de secours
+    // Etape 3: Affichage des codes de secours
     const renderBackupCodesStep = () => (
         <div className='backup-codes-step'>
             <h3>Étape 3: Codes de secours</h3>
             <p>
                 Votre authentification à deux facteurs est maintenant activée.
-                Pensez à noter ces codes.
+                Conservez ces codes de secours dans un endroit sûr.
                 À utiliser si vous n'avez pas accès à votre application d'authentification.
             </p>
 
@@ -159,7 +178,7 @@ const TwoFactorSetup = () => {
             </div>
 
             <p className='warning'>
-                <strong>Important:</strong> Ces codes ne seront plus affichés. Pensez à les noter.
+                <strong>Important:</strong> Ces codes ne seront plus affichés. Assurez-vous de les sauvegarder.
             </p>
 
             <div className='form-actions'>
@@ -189,7 +208,7 @@ const TwoFactorSetup = () => {
                 <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3. Codes de secours</div>
             </div>
 
-            {isLoading && step === 1 && <div className='loading'>Chargement...</div>}
+            {isLoading && step === 1 && <div className='loading'>Chargement des données de configuration...</div>}
 
             {step === 1 && renderSetupStep()}
             {step === 2 && renderVerifyStep()}

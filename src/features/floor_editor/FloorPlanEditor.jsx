@@ -1,12 +1,8 @@
 // src/features/floor_editor/FloorPlanEditor.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Stage, Layer, Rect, Circle, Text, Group, Line } from 'react-konva';
-//import { useSelector, useDispatch } from 'react-redux';
+import { Stage, Layer, Rect, Line } from 'react-konva';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Importations des services API
-import floorPlanService from '../../services/floorPlanService';
-import tableService from '../../services/tableService';
+import services from '../../services/serviceSwitch';
 
 // Composants de l'éditeur
 import TableShape from './TableShape';
@@ -14,12 +10,13 @@ import ObstacleShape from './ObstacleShape';
 import Toolbar from './Toolbar';
 import PropertiesPanel from './PropertiesPanel';
 
+// Importer les styles
+import '../../styles/FloorEditor.css';
+
 const FloorPlanEditor = () => {
     const { floorPlanId } = useParams();
     const navigate = useNavigate();
-    //const dispatch = useDispatch();
-    const stageRef = useRef();
-   // const user = useSelector(state => state.user.value);
+    const stageRef = useRef(null);
 
     // États pour le plan de salle
     const [floorPlan, setFloorPlan] = useState(null);
@@ -39,7 +36,7 @@ const FloorPlanEditor = () => {
         const loadFloorPlan = async () => {
             try {
                 setIsLoading(true);
-                const response = await floorPlanService.getFloorPlanDetails(floorPlanId);
+                const response = await services.floorPlan.getFloorPlanDetails(floorPlanId);
 
                 if (response.success) {
                     setFloorPlan(response.data.floorPlan);
@@ -50,7 +47,7 @@ const FloorPlanEditor = () => {
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement du plan:', error);
-                setError('Impossible de charger le plan de salle.')
+                setError('Impossible de charger le plan de salle.');
             } finally {
                 setIsLoading(false);
             }
@@ -84,28 +81,28 @@ const FloorPlanEditor = () => {
         setObstacles(updatedObstacles);
     };
 
-    
-// Sauvegarde des modifications
-const handleSave = async () => {
-  try {
-      // Sauvegarde du plan avec les obstacles
-      await floorPlanService.updateFloorPlan(floorPlanId, {
-          ...floorPlan,
-          obstacles
-      });
+    // Sauvegarde des modifications
+    const handleSave = async () => {
+        try {
+            // Sauvegarde du plan avec les obstacles
+            await services.floorPlan.updateFloorPlan(floorPlanId, {
+                ...floorPlan,
+                obstacles
+            });
 
-      // Sauvegarde des tables
-      for (const table of tables) {
-          await tableService.updateTable(table._id, table);
-      }
+            // Sauvegarde des tables
+            for (const table of tables) {
+                await services.table.updateTable(table._id, table);
+            }
 
-      // Notification et redirection
-      alert('Plan de salle sauvegardé avec succès');
-  } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      setError('Erreur lors de la sauvegarde. veuillez réessayer.')
-  }
-};
+            // Notification et redirection
+            alert('Plan de salle sauvegardé avec succès');
+            navigate('/floor-plans');
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde:', error);
+            setError('Erreur lors de la sauvegarde. Veuillez réessayer.');
+        }
+    };
 
     // Ajout d'une nouvelle table
     const handleAddTable = (tableData) => {
@@ -194,15 +191,15 @@ const handleSave = async () => {
     };
 
     if (isLoading) {
-        return <div className='loading'>Chargement du plan de salle ...</div>
+        return <div className="loading">Chargement du plan de salle...</div>;
     }
 
     if (error) {
-        return <div className='error-message'>{error}</div>
+        return <div className="error-message">{error}</div>;
     }
 
     if (!floorPlan) {
-        return <div>Aucun plan de salle trouvé</div>
+        return <div>Aucun plan de salle trouvé</div>;
     }
 
     return (

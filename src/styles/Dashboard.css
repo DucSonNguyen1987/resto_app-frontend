@@ -3,7 +3,7 @@
 /* Conteneur principal du tableau de bord */
 .dashboard-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 80vw;
     margin: 0 auto;
     padding: 20px;
   }
@@ -131,12 +131,14 @@
   
   /* Section des raccourcis */
   .dashboard-shortcuts {
-    grid-column: span 6;
+    display: flex;
+    flex-direction: row;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-bottom: 20px;
+    width: 100%;
   }
   
   .dashboard-shortcuts h3 {
@@ -148,7 +150,7 @@
   }
   
   .shortcuts-grid {
-    display: grid;
+    display: flex;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
@@ -581,3 +583,38 @@
       margin-bottom: 10px;
     }
   }
+
+  /* Ajoutez ces styles à votre fichier Dashboard.css existant */
+
+/* Mise en page des actions d'en-tête dans la section des plans de salle */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Style pour les petits boutons */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+/* Animation au survol du bouton Nouveau plan */
+.btn-primary.btn-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Icône plus dans le bouton */
+.btn-primary.btn-sm i {
+  margin-right: 5px;
+}
+
+/* Amélioration de l'apparence pour les modales dans le dashboard */
+.dashboard-container .modal-overlay {
+  z-index: 2000;
+}
+
+.dashboard-container .modal-content {
+  max-width: 90vw;
+}

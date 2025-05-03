@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { logout } from '../../reducers/authSlice';
 import DateSelector from '../common/DateSelector';
+import NewFloorPlanModal from '../floor/NewFloorPlanModal';
+import floorPlanService from '../../services/floorPlanService';
 import '../../styles/Dashboard.css';
 
 // Services mock (à remplacer par de vraies API)
-import floorPlanService from '../../services/floorPlanService';
 import reservationService from '../../services/reservationService';
 
 const Dashboard = () => {
@@ -31,6 +32,9 @@ const Dashboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // État pour le modal de création de plan
+  const [showNewPlanModal, setShowNewPlanModal] = useState(false);
 
   // Charger les données au montage du composant et quand la date change
   useEffect(() => {
@@ -81,6 +85,25 @@ const Dashboard = () => {
     loadDashboardData();
   }, [selectedDate]);
 
+  // Gérer la création d'un nouveau plan
+  const handleCreatePlan = async (newPlanData) => {
+    try {
+      const response = await floorPlanService.createFloorPlan(newPlanData);
+      
+      if (response.success) {
+        // Ajouter le nouveau plan à la liste
+        setFloorPlans([...floorPlans, response.data]);
+        setShowNewPlanModal(false);
+        // Montrer un message de succès ici si nécessaire
+      } else {
+        setError(response.error || 'Erreur lors de la création du plan de salle');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création du plan:', error);
+      setError('Impossible de créer le plan de salle');
+    }
+  };
+
   // Fonction pour se déconnecter
   const handleLogout = () => {
     dispatch(logout());
@@ -115,6 +138,9 @@ const Dashboard = () => {
       minute: '2-digit'
     });
   };
+
+  // Vérifier si l'utilisateur a le droit de créer un plan
+  const canCreatePlan = ['ADMIN', 'OWNER', 'MANAGER'].includes(role);
 
   return (
     <div className="dashboard-container">
@@ -182,12 +208,27 @@ const Dashboard = () => {
                 </div>
                 <div className="shortcut-label">Plans de salle</div>
               </Link>
+              
+              {/* Nouveau bouton pour créer un plan de salle */}
+              {canCreatePlan && (
+                <div 
+                  className="shortcut-card create"
+                  onClick={() => setShowNewPlanModal(true)}
+                >
+                  <div className="shortcut-icon create">
+                    <i className="fas fa-plus-circle"></i>
+                  </div>
+                  <div className="shortcut-label">Créer un plan</div>
+                </div>
+              )}
+              
               <Link to="/reservations" className="shortcut-card">
                 <div className="shortcut-icon">
                   <i className="fas fa-calendar-alt"></i>
                 </div>
                 <div className="shortcut-label">Réservations</div>
               </Link>
+              
               {(role === 'ADMIN' || role === 'OWNER') && (
                 <Link to="/users" className="shortcut-card">
                   <div className="shortcut-icon">
@@ -196,6 +237,7 @@ const Dashboard = () => {
                   <div className="shortcut-label">Gestion des utilisateurs</div>
                 </Link>
               )}
+              
               <Link to="/account-settings" className="shortcut-card">
                 <div className="shortcut-icon">
                   <i className="fas fa-cog"></i>
@@ -274,20 +316,31 @@ const Dashboard = () => {
           <div className="dashboard-floor-plans">
             <div className="section-header">
               <h3>Plans de salle disponibles</h3>
-              {(role === 'ADMIN' || role === 'OWNER' || role === 'MANAGER') && (
+              <div>
+                {canCreatePlan && (
+                  <button 
+                    className="btn btn-primary create-plan-btn" 
+                    onClick={() => setShowNewPlanModal(true)}
+                  >
+                    <i className="fas fa-plus"></i> Nouveau plan
+                  </button>
+                )}
                 <Link to="/floor-plans" className="view-all">
                   Gérer les plans
                 </Link>
-              )}
+              </div>
             </div>
             
             {floorPlans.length === 0 ? (
               <div className="no-floor-plans">
                 <p>Aucun plan de salle disponible.</p>
-                {(role === 'ADMIN' || role === 'OWNER' || role === 'MANAGER') && (
-                  <Link to="/floor-plans" className="btn btn-primary">
+                {canCreatePlan && (
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => setShowNewPlanModal(true)}
+                  >
                     Créer un plan de salle
-                  </Link>
+                  </button>
                 )}
               </div>
             ) : (
@@ -306,7 +359,7 @@ const Dashboard = () => {
                       <Link to={`/floor-plans/view/${plan._id}`} className="btn btn-secondary">
                         Voir
                       </Link>
-                      {(role === 'ADMIN' || role === 'OWNER' || role === 'MANAGER') && (
+                      {canCreatePlan && (
                         <Link to={`/floor-plans/edit/${plan._id}`} className="btn btn-primary">
                           Modifier
                         </Link>
@@ -345,6 +398,14 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Modal pour créer un nouveau plan */}
+      {showNewPlanModal && (
+        <NewFloorPlanModal
+          onClose={() => setShowNewPlanModal(false)}
+          onSave={handleCreatePlan}
+        />
       )}
     </div>
   );

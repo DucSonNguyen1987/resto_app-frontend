@@ -1,5 +1,6 @@
 // src/components/floor/NewFloorPlanModal.jsx
 import React, { useState } from 'react';
+import FloorPlanEditor from '../../features/floor_editor/FloorPlanEditor';
 
 const NewFloorPlanModal = ({ onClose, onSave }) => {
   // État pour les données du formulaire
@@ -113,17 +114,6 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
               {errors.name && <div className="error-text">{errors.name}</div>}
             </div>
             
-            <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows="3"
-              />
-            </div>
-            
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="width">Largeur *</label>
@@ -168,7 +158,22 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
                   <option value="meters">Mètres</option>
                 </select>
               </div>
+
+              <div className="form-group">
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows="3"
+              />
             </div>
+
+            
+            </div>
+
+            <FloorPlanEditor />
             
             <div className="form-group">
               <label htmlFor="status">Statut initial</label>

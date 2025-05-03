@@ -1,12 +1,8 @@
 // src/components/floor/FloorPlanViewer.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Stage, Layer, Rect, Group, Text } from 'react-konva';
-
-// Services
-import floorPlanService from '../../services/floorPlanService';
-import tableService from '../../services/tableService';
-import reservationService from '../../services/reservationService';
+import { Stage, Layer, Rect, Group, Text, Line } from 'react-konva';
+import services from '../../services/serviceSwitch';
 
 // Composants
 import TableShape from '../../features/floor_editor/TableShape';
@@ -41,7 +37,7 @@ const FloorPlanViewer = () => {
         setIsLoading(true);
         
         // Charger le plan de salle et ses tables
-        const response = await floorPlanService.getFloorPlanDetails(floorPlanId);
+        const response = await services.floorPlan.getFloorPlanDetails(floorPlanId);
         
         if (response.success) {
           setFloorPlan(response.data.floorPlan);
@@ -72,7 +68,7 @@ const FloorPlanViewer = () => {
         // Formater la date au format YYYY-MM-DD
         const dateString = selectedDate.toISOString().split('T')[0];
         
-        const response = await reservationService.getReservations({
+        const response = await services.reservation.getReservations({
           date: dateString,
           floorPlan: floorPlanId
         });

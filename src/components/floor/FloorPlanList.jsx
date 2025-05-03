@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import floorPlanService from '../../services/floorPlanService';
+import services from '../../services/serviceSwitch';
 
 // Composant pour la création d'un nouveau plan
 import NewFloorPlanModal from './NewFloorPlanModal';
@@ -14,7 +14,7 @@ const FloorPlanList = () => {
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
   
   const navigate = useNavigate();
-  const user = useSelector(state => state.user.value);
+  const user = useSelector(state => state.auth.value);
   
   // Vérifier si l'utilisateur a les permissions pour créer/éditer des plans
   const canCreatePlan = ['ADMIN', 'OWNER', 'MANAGER'].includes(user.role);
@@ -24,7 +24,7 @@ const FloorPlanList = () => {
     const loadFloorPlans = async () => {
       try {
         setIsLoading(true);
-        const response = await floorPlanService.getAllFloorPlans();
+        const response = await services.floorPlan.getAllFloorPlans();
         
         if (response.success) {
           setFloorPlans(response.data);
@@ -45,7 +45,7 @@ const FloorPlanList = () => {
   // Gérer la création d'un nouveau plan
   const handleCreatePlan = async (newPlanData) => {
     try {
-      const response = await floorPlanService.createFloorPlan(newPlanData);
+      const response = await services.floorPlan.createFloorPlan(newPlanData);
       
       if (response.success) {
         // Ajouter le nouveau plan à la liste
@@ -64,7 +64,7 @@ const FloorPlanList = () => {
   const handleDeletePlan = async (floorPlanId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce plan de salle ?')) {
       try {
-        const response = await floorPlanService.deleteFloorPlan(floorPlanId);
+        const response = await services.floorPlan.deleteFloorPlan(floorPlanId);
         
         if (response.success) {
           // Retirer le plan supprimé de la liste

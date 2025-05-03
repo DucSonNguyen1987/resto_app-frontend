@@ -13,7 +13,7 @@ const initialState = {
         requires2FA: false,
         tempToken: null,
         setupQRCode: null,
-        setupSecret:null,
+        setupSecret: null,
         backupCodes: [],
         twoFactorEnabled: false
     }
@@ -23,7 +23,7 @@ export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-
+        // Authentification standard ou avec 2FA requis
         login: (state, action) => {
             // Si 2FA requis, ne pas définir isAuthenticated à true
             if (action.payload.requires2FA) {
@@ -43,8 +43,9 @@ export const authSlice = createSlice({
             }
         },
 
+        // Vérification 2FA réussie lors de la connexion
         verify2FA: (state, action) => {
-            // Une fois vérifé, compléter l'authentification
+            // Une fois vérifié, compléter l'authentification
             state.value.isAuthenticated = true;
             state.value.requires2FA = false;
             state.value.tempToken = null;
@@ -58,36 +59,50 @@ export const authSlice = createSlice({
             state.value.twoFactorEnabled = true;
         },
 
-        logout : (state) => {
+        // Déconnexion
+        logout: (state) => {
             state.value = initialState.value;
         },
 
-        setAccessToken :(state, action) => {
-            state.value.setupQRCode = action.payload.setupQRCode;
-            state.value.setupSecret = action.payload.secret;
+        // Mise à jour du token d'accès
+        setAccessToken: (state, action) => {
+            state.value.accessToken = action.payload;
         },
 
-        set2FASetupData : (state, action) => {
+        // Stocker les données de configuration 2FA
+        set2FASetupData: (state, action) => {
             state.value.setupQRCode = action.payload.qrCode;
             state.value.setupSecret = action.payload.secret;
         },
 
-        enable2FA : (state, action) => {
-            state.value.twoFactorEnabled =true;
+        // Activer la 2FA après vérification réussie
+        enable2FA: (state, action) => {
+            state.value.twoFactorEnabled = true;
             state.value.backupCodes = action.payload.backupCodes;
         },
 
-        disable2FA : (state) => {
+        // Désactiver la 2FA
+        disable2FA: (state) => {
             state.value.twoFactorEnabled = false;
             state.value.backupCodes = [];
         },
 
-        setBackupCodes :(state, action) => {
+        // Mettre à jour les codes de secours
+        setBackupCodes: (state, action) => {
             state.value.backupCodes = action.payload;
         }
     },
 });
 
-export const { login, verify2FA, logout, setAccessToken, set2FASetupData, enable2FA, disable2FA, setBackupCodes } = authSlice.actions;
+export const { 
+    login, 
+    verify2FA, 
+    logout, 
+    setAccessToken, 
+    set2FASetupData, 
+    enable2FA, 
+    disable2FA, 
+    setBackupCodes 
+} = authSlice.actions;
 
 export default authSlice.reducer;
