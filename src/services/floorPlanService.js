@@ -37,7 +37,7 @@ const floorPlanService = {
   // Créer un nouveau plan de salle
   createFloorPlan: async (floorPlanData) => {
     try {
-      const response = await api.post(`${API_URL}, floorPlanData)`;
+      const response = await api.post(`${API_URL}`, floorPlanData);
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('Erreur lors de la création du plan de salle:', error);

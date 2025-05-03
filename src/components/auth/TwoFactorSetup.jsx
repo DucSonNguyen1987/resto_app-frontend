@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { set2FASetupData, enable2FA } from '../../reducers/authSlice.js';
-import twoFactorService from '../../services/mockTwoFactorService.jsx';
+import twoFactorService from '../../services/mockTwoFactorService.js';  // Corrigé l'extension
 import { useNavigate } from 'react-router-dom';
 import '../../styles/2fa.css';
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { disable2FA, setBackupCodes } from '../../reducers/authSlice';
-import twoFactorService from '../../services/twoFactorService';
+import twoFactorService from '../../services/mockTwoFactorService.js';
 import { Link } from 'react-router-dom';
 import '../../styles/2fa.css';
 
