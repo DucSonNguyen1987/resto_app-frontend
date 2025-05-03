@@ -1,6 +1,8 @@
 // src/components/floor/NewFloorPlanModal.jsx
 import React, { useState } from 'react';
-import FloorPlanEditor from '../../features/floor_editor/FloorPlanEditor';
+//import FloorPlanEditor from '../../features/floor_editor/FloorPlanEditor';
+import SeatingEditor from '../../features/floor_editor/SeatingEditor';
+
 
 const NewFloorPlanModal = ({ onClose, onSave }) => {
   // État pour les données du formulaire
@@ -173,7 +175,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
             
             </div>
 
-            <FloorPlanEditor />
+            <SeatingEditor />
             
             <div className="form-group">
               <label htmlFor="status">Statut initial</label>
