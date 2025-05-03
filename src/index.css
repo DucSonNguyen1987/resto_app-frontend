@@ -45,15 +45,20 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  color: #595959;
+  background-color: #F2F2F2;
   cursor: pointer;
   transition: border-color 0.25s;
+  margin-left: 1vw;
 }
 button:hover {
-  border-color: #646cff;
+  
+  background-color: #D9D9D9;
 }
 button:focus,
 button:focus-visible {
+  background-color: #D9D9D9;
+  outline-color: #595959;
   outline: 4px auto -webkit-focus-ring-color;
 }
 

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Move, Square, Circle, Save, Trash2, Edit2, Plus, Box } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Stage, Layer, Rect, Circle, Group, Text, Line } from 'react-konva';
+import './SeatingEditor.css';
 
-const SeatingPlanEditor = () => {
+const SeatingEditor = () => {
   const [mode, setMode] = useState('view'); // 'view', 'draw', 'add-table', 'add-obstacle', 'edit-room', 'edit-table'
   const [roomShape, setRoomShape] = useState([]);
   const [tables, setTables] = useState([]);
@@ -10,7 +11,6 @@ const SeatingPlanEditor = () => {
   const [selectedObstacle, setSelectedObstacle] = useState(null);
   const [selectedCorner, setSelectedCorner] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const canvasRef = useRef(null);
   const [tableConfig, setTableConfig] = useState({
     shape: 'rectangle',
     width: 100,
@@ -26,117 +26,68 @@ const SeatingPlanEditor = () => {
     name: 'Obstacle'
   });
 
-  useEffect(() => {
-    drawCanvas();
-  }, [roomShape, tables, obstacles, selectedTable, selectedObstacle, selectedCorner, mode]);
+  // Icônes personnalisées avec svgPath
+  const MoveIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
+    </svg>
+  );
 
-  const drawCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    // Clear canvas
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw room shape
-    if (roomShape.length > 0) {
-      ctx.beginPath();
-      ctx.moveTo(roomShape[0].x, roomShape[0].y);
-      roomShape.forEach(point => {
-        ctx.lineTo(point.x, point.y);
-      });
-      ctx.closePath();
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = '#f8f8f8';
-      ctx.fill();
-      
-      // Draw corner handles if in edit mode
-      if (mode === 'edit-room') {
-        roomShape.forEach((point, index) => {
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
-          ctx.fillStyle = selectedCorner === index ? '#3b82f6' : '#ef4444';
-          ctx.fill();
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        });
-      }
-    }
-    
-    // Draw tables
-    tables.forEach((table, index) => {
-      ctx.save();
-      ctx.translate(table.x, table.y);
-      
-      if (selectedTable === index) {
-        ctx.shadowColor = '#3b82f6';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#3b82f6';
-      } else {
-        ctx.fillStyle = '#94a3b8';
-      }
-      
-      if (table.shape === 'rectangle') {
-        ctx.fillRect(-table.width/2, -table.height/2, table.width, table.height);
-      } else if (table.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, table.width/2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-      
-      // Draw table info
-      ctx.fillStyle = '#334155';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(table.name || `Table ${index + 1}`, 0, 0);
-      ctx.fillText(`${table.capacity} places`, 0, 15);
-      
-      ctx.restore();
-    });
+  const SquareIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    </svg>
+  );
 
-    // Draw obstacles
-    obstacles.forEach((obstacle, index) => {
-      ctx.save();
-      ctx.translate(obstacle.x, obstacle.y);
-      
-      if (selectedObstacle === index) {
-        ctx.shadowColor = '#ef4444';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#fef2f2';
-        ctx.strokeStyle = '#ef4444';
-      } else {
-        ctx.fillStyle = '#757575';
-        ctx.strokeStyle = '#424242';
-      }
-      
-      if (obstacle.shape === 'rectangle') {
-        ctx.fillRect(-obstacle.width/2, -obstacle.height/2, obstacle.width, obstacle.height);
-        ctx.strokeRect(-obstacle.width/2, -obstacle.height/2, obstacle.width, obstacle.height);
-      } else if (obstacle.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, obstacle.width/2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-      }
-      
-      // Draw obstacle name
-      ctx.fillStyle = '#1f2937';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(obstacle.name, 0, 5);
-      
-      ctx.restore();
-    });
-  };
+  const CircleIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10"/>
+    </svg>
+  );
 
-  const handleCanvasClick = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  const PlusIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  );
+
+  const BoxIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <line x1="9" y1="9" x2="15" y2="15"/>
+      <line x1="15" y1="9" x2="9" y2="15"/>
+    </svg>
+  );
+
+  const TrashIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="5" y1="6" x2="19" y2="6"/>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    </svg>
+  );
+
+  const EditIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  );
+
+  const SaveIcon = () => (
+    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+  );
+
+  const handleStageClick = (e) => {
+    const stage = e.target.getStage();
+    const pointerPosition = stage.getPointerPosition();
+    const x = pointerPosition.x;
+    const y = pointerPosition.y;
 
     if (mode === 'draw') {
       setRoomShape([...roomShape, { x, y }]);
@@ -158,85 +109,10 @@ const SeatingPlanEditor = () => {
       };
       setObstacles([...obstacles, newObstacle]);
       setMode('view');
-    } else if (mode === 'view') {
-      // Check if clicked on a table
-      const clickedTableIndex = tables.findIndex(table => {
-        const distance = Math.sqrt(Math.pow(table.x - x, 2) + Math.pow(table.y - y, 2));
-        return distance < table.width / 2;
-      });
-      
-      // Check if clicked on an obstacle
-      const clickedObstacleIndex = obstacles.findIndex(obstacle => {
-        const distance = Math.sqrt(Math.pow(obstacle.x - x, 2) + Math.pow(obstacle.y - y, 2));
-        return distance < obstacle.width / 2;
-      });
-      
-      setSelectedTable(clickedTableIndex >= 0 ? clickedTableIndex : null);
-      setSelectedObstacle(clickedObstacleIndex >= 0 ? clickedObstacleIndex : null);
     }
   };
 
-  const handleMouseDown = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (mode === 'view' && selectedTable !== null) {
-      setIsDragging(true);
-    } else if (mode === 'edit-room') {
-      // Check if clicked on a corner
-      const clickedCorner = roomShape.findIndex(point => {
-        const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
-        return distance < 8;
-      });
-      
-      if (clickedCorner >= 0) {
-        setSelectedCorner(clickedCorner);
-        setIsDragging(true);
-      }
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      if (mode === 'view' && selectedTable !== null) {
-        const updatedTables = [...tables];
-        updatedTables[selectedTable] = {
-          ...updatedTables[selectedTable],
-          x: x,
-          y: y
-        };
-        setTables(updatedTables);
-      } else if (mode === 'view' && selectedObstacle !== null) {
-        const updatedObstacles = [...obstacles];
-        updatedObstacles[selectedObstacle] = {
-          ...updatedObstacles[selectedObstacle],
-          x: x,
-          y: y
-        };
-        setObstacles(updatedObstacles);
-      } else if (mode === 'edit-room' && selectedCorner !== null) {
-        const updatedShape = [...roomShape];
-        updatedShape[selectedCorner] = { x, y };
-        setRoomShape(updatedShape);
-      }
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    if (mode === 'edit-room') {
-      setSelectedCorner(null);
-    }
-  };
-
-  const deleteSelectedTable = () => {
+  const handleDeleteSelectedTable = () => {
     if (selectedTable !== null) {
       const updatedTables = tables.filter((_, index) => index !== selectedTable);
       setTables(updatedTables);
@@ -244,7 +120,7 @@ const SeatingPlanEditor = () => {
     }
   };
 
-  const deleteSelectedObstacle = () => {
+  const handleDeleteSelectedObstacle = () => {
     if (selectedObstacle !== null) {
       const updatedObstacles = obstacles.filter((_, index) => index !== selectedObstacle);
       setObstacles(updatedObstacles);
@@ -280,66 +156,56 @@ const SeatingPlanEditor = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="seating-editor">
       {/* Sidebar */}
-      <div className="w-80 bg-white p-6 border-r border-gray-200">
-        <h2 className="text-xl font-bold mb-6">Éditeur de plan de salle</h2>
+      <div className="sidebar">
+        <h2>Éditeur de plan de salle</h2>
         
         {/* Mode buttons */}
-        <div className="space-y-3 mb-6">
+        <div className="mode-buttons">
           <button
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border ${
-              mode === 'view' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
+            className={`mode-button ${mode === 'view' ? 'active' : ''}`}
             onClick={() => setMode('view')}
           >
-            <Move className="w-5 h-5" />
-            Déplacer
+            <MoveIcon />
+            <span>Déplacer</span>
           </button>
           <button
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border ${
-              mode === 'draw' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
+            className={`mode-button ${mode === 'draw' ? 'active' : ''}`}
             onClick={() => setMode('draw')}
           >
-            <Edit2 className="w-5 h-5" />
-            Dessiner la salle
+            <EditIcon />
+            <span>Dessiner la salle</span>
           </button>
           <button
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border ${
-              mode === 'edit-room' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
+            className={`mode-button ${mode === 'edit-room' ? 'active' : ''}`}
             onClick={() => setMode('edit-room')}
             disabled={roomShape.length === 0}
           >
-            <Square className="w-5 h-5" />
-            Modifier la salle
+            <SquareIcon />
+            <span>Modifier la salle</span>
           </button>
           <button
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border ${
-              mode === 'add-table' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
+            className={`mode-button ${mode === 'add-table' ? 'active' : ''}`}
             onClick={() => setMode('add-table')}
           >
-            <Plus className="w-5 h-5" />
-            Ajouter une table
+            <PlusIcon />
+            <span>Ajouter une table</span>
           </button>
           <button
-            className={`w-full flex items-center gap-2 p-3 rounded-lg border ${
-              mode === 'add-obstacle' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-            }`}
+            className={`mode-button ${mode === 'add-obstacle' ? 'active' : ''}`}
             onClick={() => setMode('add-obstacle')}
           >
-            <Box className="w-5 h-5" />
-            Ajouter un obstacle
+            <BoxIcon />
+            <span>Ajouter un obstacle</span>
           </button>
         </div>
 
         {/* Room controls */}
         {mode === 'draw' && (
-          <div className="mb-6">
+          <div className="room-controls">
             <button
-              className="w-full p-3 bg-red-500 text-white rounded-lg"
+              className="button button-danger"
               onClick={clearRoom}
             >
               Effacer la salle
@@ -349,67 +215,62 @@ const SeatingPlanEditor = () => {
 
         {/* Configuration */}
         {(mode === 'add-table' || (mode === 'view' && selectedTable !== null)) && (
-          <div className="space-y-4">
-            <h3 className="font-semibold">Configuration de la table</h3>
+          <div className="config-section">
+            <h3>Configuration de la table</h3>
             
-            <div>
-              <label className="block text-sm mb-1">Nom</label>
+            <div className="form-group">
+              <label>Nom</label>
               <input
                 type="text"
                 value={tableConfig.name}
                 onChange={(e) => setTableConfig({...tableConfig, name: e.target.value})}
-                className="w-full p-2 border rounded"
                 placeholder="Nom de la table"
               />
             </div>
 
-            <div>
-              <label className="block text-sm mb-1">Forme</label>
+            <div className="form-group">
+              <label>Forme</label>
               <select
                 value={tableConfig.shape}
                 onChange={(e) => setTableConfig({...tableConfig, shape: e.target.value})}
-                className="w-full p-2 border rounded"
               >
                 <option value="rectangle">Rectangle</option>
                 <option value="circle">Cercle</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm mb-1">Largeur</label>
+            <div className="form-group">
+              <label>Largeur</label>
               <input
                 type="number"
                 value={tableConfig.width}
                 onChange={(e) => setTableConfig({...tableConfig, width: parseInt(e.target.value)})}
-                className="w-full p-2 border rounded"
               />
             </div>
 
             {tableConfig.shape === 'rectangle' && (
-              <div>
-                <label className="block text-sm mb-1">Hauteur</label>
+              <div className="form-group">
+                <label>Hauteur</label>
                 <input
                   type="number"
                   value={tableConfig.height}
                   onChange={(e) => setTableConfig({...tableConfig, height: parseInt(e.target.value)})}
-                  className="w-full p-2 border rounded"
                 />
               </div>
             )}
 
-            <div>
-              <label className="block text-sm mb-1">Capacité</label>
+            <div className="form-group">
+              <label>Capacité</label>
               <input
                 type="number"
                 value={tableConfig.capacity}
                 onChange={(e) => setTableConfig({...tableConfig, capacity: parseInt(e.target.value)})}
-                className="w-full p-2 border rounded"
               />
             </div>
 
             {selectedTable !== null && mode === 'view' && (
               <button
-                className="w-full p-3 bg-blue-500 text-white rounded-lg"
+                className="button button-primary"
                 onClick={saveTableConfig}
               >
                 Sauvegarder les modifications
@@ -419,57 +280,53 @@ const SeatingPlanEditor = () => {
         )}
 
         {(mode === 'add-obstacle' || (mode === 'view' && selectedObstacle !== null)) && (
-          <div className="space-y-4">
-            <h3 className="font-semibold">Configuration de l'obstacle</h3>
+          <div className="config-section">
+            <h3>Configuration de l'obstacle</h3>
             
-            <div>
-              <label className="block text-sm mb-1">Nom</label>
+            <div className="form-group">
+              <label>Nom</label>
               <input
                 type="text"
                 value={obstacleConfig.name}
                 onChange={(e) => setObstacleConfig({...obstacleConfig, name: e.target.value})}
-                className="w-full p-2 border rounded"
                 placeholder="Nom de l'obstacle"
               />
             </div>
 
-            <div>
-              <label className="block text-sm mb-1">Forme</label>
+            <div className="form-group">
+              <label>Forme</label>
               <select
                 value={obstacleConfig.shape}
                 onChange={(e) => setObstacleConfig({...obstacleConfig, shape: e.target.value})}
-                className="w-full p-2 border rounded"
               >
                 <option value="rectangle">Rectangle</option>
                 <option value="circle">Cercle</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm mb-1">Largeur</label>
+            <div className="form-group">
+              <label>Largeur</label>
               <input
                 type="number"
                 value={obstacleConfig.width}
                 onChange={(e) => setObstacleConfig({...obstacleConfig, width: parseInt(e.target.value)})}
-                className="w-full p-2 border rounded"
               />
             </div>
 
             {obstacleConfig.shape === 'rectangle' && (
-              <div>
-                <label className="block text-sm mb-1">Hauteur</label>
+              <div className="form-group">
+                <label>Hauteur</label>
                 <input
                   type="number"
                   value={obstacleConfig.height}
                   onChange={(e) => setObstacleConfig({...obstacleConfig, height: parseInt(e.target.value)})}
-                  className="w-full p-2 border rounded"
                 />
               </div>
             )}
 
             {selectedObstacle !== null && mode === 'view' && (
               <button
-                className="w-full p-3 bg-blue-500 text-white rounded-lg"
+                className="button button-primary"
                 onClick={saveObstacleConfig}
               >
                 Sauvegarder les modifications
@@ -481,42 +338,171 @@ const SeatingPlanEditor = () => {
         {/* Delete actions */}
         {selectedTable !== null && mode === 'view' && (
           <button
-            className="w-full mt-6 p-3 bg-red-500 text-white rounded-lg flex items-center justify-center gap-2"
-            onClick={deleteSelectedTable}
+            className="button button-danger delete-button"
+            onClick={handleDeleteSelectedTable}
           >
-            <Trash2 className="w-5 h-5" />
-            Supprimer la table
+            <TrashIcon />
+            <span>Supprimer la table</span>
           </button>
         )}
 
         {selectedObstacle !== null && mode === 'view' && (
           <button
-            className="w-full mt-6 p-3 bg-red-500 text-white rounded-lg flex items-center justify-center gap-2"
-            onClick={deleteSelectedObstacle}
+            className="button button-danger delete-button"
+            onClick={handleDeleteSelectedObstacle}
           >
-            <Trash2 className="w-5 h-5" />
-            Supprimer l'obstacle
+            <TrashIcon />
+            <span>Supprimer l'obstacle</span>
           </button>
         )}
       </div>
 
-      {/* Canvas */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
+      {/* Konva Stage */}
+      <div className="canvas-container">
+        <div className="canvas-wrapper">
+          <Stage
             width={800}
             height={600}
-            className="border border-gray-300 bg-white rounded-lg shadow-sm cursor-crosshair"
-            onClick={handleCanvasClick}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          />
+            className="seating-canvas"
+            onClick={handleStageClick}
+          >
+            <Layer>
+              {/* Dessiner la salle */}
+              {roomShape.length > 0 && (
+                <>
+                  <Line
+                    points={roomShape.reduce((acc, point) => [...acc, point.x, point.y], [])}
+                    stroke="#333"
+                    strokeWidth={2}
+                    closed={true}
+                    fill="#F8F8F8"
+                  />
+                  
+                  {/* Coins de la salle en mode édition */}
+                  {mode === 'edit-room' && roomShape.map((point, index) => (
+                    <Circle
+                      key={index}
+                      x={point.x}
+                      y={point.y}
+                      radius={8}
+                      fill={selectedCorner === index ? '#3b82f6' : '#ef4444'}
+                      stroke="#fff"
+                      strokeWidth={2}
+                      draggable={true}
+                      onDragMove={(e) => {
+                        const updatedShape = [...roomShape];
+                        updatedShape[index] = { x: e.target.x(), y: e.target.y() };
+                        setRoomShape(updatedShape);
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Dessiner les tables */}
+              {tables.map((table, index) => (
+                <Group
+                  key={table.id}
+                  x={table.x}
+                  y={table.y}
+                  draggable={mode === 'view'}
+                  onClick={() => setSelectedTable(index)}
+                  onDblClick={() => setSelectedTable(index)}
+                  onDragMove={(e) => {
+                    const updatedTables = [...tables];
+                    updatedTables[index] = { ...table, x: e.target.x(), y: e.target.y() };
+                    setTables(updatedTables);
+                  }}
+                >
+                  {table.shape === 'rectangle' ? (
+                    <Rect
+                      x={-table.width / 2}
+                      y={-table.height / 2}
+                      width={table.width}
+                      height={table.height}
+                      fill={selectedTable === index ? '#3b82f6' : '#94a3b8'}
+                      shadowBlur={selectedTable === index ? 10 : 0}
+                      shadowColor={selectedTable === index ? '#3b82f6' : ''}
+                    />
+                  ) : (
+                    <Circle
+                      radius={table.width / 2}
+                      fill={selectedTable === index ? '#3b82f6' : '#94a3b8'}
+                      shadowBlur={selectedTable === index ? 10 : 0}
+                      shadowColor={selectedTable === index ? '#3b82f6' : ''}
+                    />
+                  )}
+                  <Text
+                    text={table.name || `Table ${index + 1}`}
+                    fontSize={12}
+                    fill="#334155"
+                    width={table.width}
+                    align="center"
+                    y={-10}
+                  />
+                  <Text
+                    text={`${table.capacity} places`}
+                    fontSize={12}
+                    fill="#334155"
+                    width={table.width}
+                    align="center"
+                    y={5}
+                  />
+                </Group>
+              ))}
+
+              {/* Dessiner les obstacles */}
+              {obstacles.map((obstacle, index) => (
+                <Group
+                  key={obstacle.id}
+                  x={obstacle.x}
+                  y={obstacle.y}
+                  draggable={mode === 'view'}
+                  onClick={() => setSelectedObstacle(index)}
+                  onDblClick={() => setSelectedObstacle(index)}
+                  onDragMove={(e) => {
+                    const updatedObstacles = [...obstacles];
+                    updatedObstacles[index] = { ...obstacle, x: e.target.x(), y: e.target.y() };
+                    setObstacles(updatedObstacles);
+                  }}
+                >
+                  {obstacle.shape === 'rectangle' ? (
+                    <Rect
+                      x={-obstacle.width / 2}
+                      y={-obstacle.height / 2}
+                      width={obstacle.width}
+                      height={obstacle.height}
+                      fill={selectedObstacle === index ? '#fef2f2' : '#757575'}
+                      stroke={selectedObstacle === index ? '#ef4444' : '#424242'}
+                      strokeWidth={1}
+                      shadowBlur={selectedObstacle === index ? 10 : 0}
+                      shadowColor={selectedObstacle === index ? '#ef4444' : ''}
+                    />
+                  ) : (
+                    <Circle
+                      radius={obstacle.width / 2}
+                      fill={selectedObstacle === index ? '#fef2f2' : '#757575'}
+                      stroke={selectedObstacle === index ? '#ef4444' : '#424242'}
+                      strokeWidth={1}
+                      shadowBlur={selectedObstacle === index ? 10 : 0}
+                      shadowColor={selectedObstacle === index ? '#ef4444' : ''}
+                    />
+                  )}
+                  <Text
+                    text={obstacle.name}
+                    fontSize={12}
+                    fill="#1f2937"
+                    width={obstacle.width}
+                    align="center"
+                    y={-6}
+                  />
+                </Group>
+              ))}
+            </Layer>
+          </Stage>
           
           {/* Instructions */}
-          <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-3 rounded-lg text-sm">
+          <div className="instructions">
             {mode === 'draw' && 'Cliquez pour dessiner les murs de la salle'}
             {mode === 'edit-room' && 'Déplacez les coins pour modifier la forme de la salle'}
             {mode === 'add-table' && 'Cliquez pour positionner une nouvelle table'}
@@ -531,4 +517,4 @@ const SeatingPlanEditor = () => {
   );
 };
 
-export default SeatingPlanEditor;
+export default SeatingEditor;

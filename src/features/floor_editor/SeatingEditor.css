@@ -1,0 +1,188 @@
+/* SeatingEditor.css */
+.seating-editor {
+    display: flex;
+    height: 100vh;
+    background-color: #F2F2F2;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 320px;
+    background-color: white;
+    padding: 24px;
+    border-right: 1px solid #d1d5db;
+  }
+  
+  .sidebar h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 24px;
+  }
+  
+  /* Mode buttons */
+  .mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .mode-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .mode-button:hover {
+    background-color: #f9fafb;
+  }
+  
+  .mode-button.active {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    color: #3b82f6;
+  }
+  
+  .mode-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .mode-button .icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Room controls */
+  .room-controls {
+    margin-bottom: 24px;
+  }
+  
+  /* Configuration sections */
+  .config-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .config-section h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    margin-bottom: 4px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    transition: border-color 0.2s ease;
+    background-color: #F2F2F2;
+    color: #595959;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+  }
+  
+  .form-group input[type="number"] {
+    width: 100%;
+  }
+  
+  /* Buttons */
+  .button {
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    margin-top: 16px;
+  }
+  
+  .button-primary {
+    background-color: #3b82f6;
+    color: white;
+  }
+  
+  .button-primary:hover {
+    background-color: #2563eb;
+  }
+  
+  .button-danger {
+    background-color: #ef4444;
+    color: white;
+  }
+  
+  .button-danger:hover {
+    background-color: #dc2626;
+  }
+  
+  .delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  
+  .delete-button .icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Canvas container */
+  .canvas-container {
+    flex: 1;
+    display: flex;
+    padding: 32px;
+    height: 50vh;
+    width: 100%;
+    background-color: #dc2626;
+  }
+  
+  .canvas-wrapper {
+    position: relative;
+  }
+  
+  .seating-canvas {
+    border: 1px solid #d1d5db;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+  
+  /* Instructions */
+  .instructions {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background-color: rgba(89, 89, 89, 0.25);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    max-width: 300px;
+    z-index: 0;
+  }
