@@ -40,7 +40,7 @@ const PrivateRoute = ({children}) => {
 
 // Protège les routes auth 2FA
 const Requires2FARoute = ({children}) => {
-  const {requires2FA} = useSelector(state => state.auth.value);
+  const {requires2FA} = useSelector(state => state.user.value);
 
   if(requires2FA) {
     return children;
@@ -50,7 +50,7 @@ const Requires2FARoute = ({children}) => {
 
 // Check si 2FA est requis pour les ADMINS et les OWNER
 const RequiresTwoFactorCheck = ({children}) => {
-  const {role, twoFactorEnabled, isAuthenticated} = useSelector(state => state.auth.value);
+  const {role, twoFactorEnabled, isAuthenticated} = useSelector(state => state.user.value);
 
   // Si l'utilisateur est authentifié et est ADMIN/OWNER mais n'a pas activé 2FA
   if(isAuthenticated && (role === 'ADMIN' || role === 'OWNER') && !twoFactorEnabled){

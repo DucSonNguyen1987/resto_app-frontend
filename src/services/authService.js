@@ -9,7 +9,7 @@ const authService = {
     login: async (email, password) => {
         try {
             console.log('Attempting login with:', email);
-            const response = await api.post('/auth/login', { email, password });
+            const response = await api.post('/users/login', { email, password });
             
             // Check if 2FA is required
             if (response.data.requires2FA) {
@@ -36,7 +36,7 @@ const authService = {
                     accessToken: userData.accessToken || userData.token,
                     refreshToken: userData.refreshToken,
                     role: userData.role || 'USER',
-                    twoFactorEnabled: userData.twoFactorEnabled || false
+                    twoFactorEnabled: userData.twoFactorEnabled || true
                 }
             };
         } catch (error) {

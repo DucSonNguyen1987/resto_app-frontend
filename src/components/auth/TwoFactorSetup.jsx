@@ -13,7 +13,7 @@ const TwoFactorSetup = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { setupQRCode, setupSecret, backupCodes } = useSelector(state => state.auth.value);
+    const { setupQRCode, setupSecret, backupCodes } = useSelector(state => state.user.value);
 
     useEffect(() => {
         // Charger les données de configuration au montage si nécessaire
