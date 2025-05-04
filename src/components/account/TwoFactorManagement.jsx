@@ -14,7 +14,7 @@ const TwoFactorManagement = () => {
     const [successMessage, setSuccessMessage] = useState('');
 
     const dispatch = useDispatch();
-    const { twoFactorEnabled, backupCodes, role } = useSelector(state => state.auth.value);
+    const { twoFactorEnabled, backupCodes, role } = useSelector(state => state.user.value);
 
     // Check si l'utilisateur est ADMIN ou OWNER 
     const requiresTwoFactor = role === 'ADMIN' || role === 'OWNER';

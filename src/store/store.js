@@ -29,10 +29,10 @@ export const store = configureStore({
             },
         })
 });
+// Inject the store into the axios instance for interceptors
+import { injectStore } from '../api/axios';
+injectStore(store);
 
 // Create the persistor for redux persist
 export const persistor = persistStore(store);
 
-// Inject the store into the axios instance for interceptors
-import { injectStore } from '../api/axios';
-injectStore(store);

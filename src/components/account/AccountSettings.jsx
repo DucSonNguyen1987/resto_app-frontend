@@ -5,7 +5,7 @@ import { updateUserProfile } from '../../reducers/userSlice';
 
 const AccountSettings = () => {
   const dispatch = useDispatch();
-  const { username, email, firstname, lastname, phone, role } = useSelector(state => state.auth.value);
+  const { username, email, firstname, lastname, phone, role } = useSelector(state => state.user.value);
   
   // États pour le formulaire
   const [formData, setFormData] = useState({

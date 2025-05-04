@@ -5,10 +5,10 @@
  */
 
 // Fonction pour tester la connexion et les tokens
-export const testConnection = async (baseUrl = 'http://localhost:3000') => {
+export const testConnection = async (baseUrl = 'http://localhost:3000/users/login') => {
     try {
       // Test simple de connexion sans authentification
-      const response = await fetch(`${baseUrl}/health-check`);
+      const response = await fetch(`${baseUrl}`);
       
       console.log('=== TEST DE CONNEXION ===');
       console.log(`Status: ${response.status}`);
@@ -62,8 +62,8 @@ export const testConnection = async (baseUrl = 'http://localhost:3000') => {
             console.log(`Date d'expiration: ${expirationDate}`);
           }
         }
-      } catch (error) {
-        console.log('Format de token non-JWT ou invalide');
+      } catch  {
+        console.error('Format de token non-JWT ou invalide');
       }
     }
     

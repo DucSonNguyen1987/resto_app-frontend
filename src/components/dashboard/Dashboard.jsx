@@ -17,7 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   // Récupérer les informations d'authentification du store Redux
-  const { username, firstname, lastname, role, twoFactorEnabled } = useSelector(state => state.auth.value);
+  const { username, firstname, lastname, role, twoFactorEnabled } = useSelector(state => state.user.value);
   
   // États pour les données du dashboard
   const [selectedDate, setSelectedDate] = useState(new Date());

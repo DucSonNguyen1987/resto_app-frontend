@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 const TokenDebugger = () => {
-  const auth = useSelector(state => state.auth.value);
+  
   const user = useSelector(state => state.user.value);
   return (
     <div style={{ 
@@ -20,26 +20,26 @@ const TokenDebugger = () => {
       zIndex: 9999,
       opacity: 0.9
     }}>
-      <h4 style={{ margin: '0 0 8px 0' }}>Auth Debug</h4>
+      <h4 style={{ margin: '0 0 8px 0' }}>User Debug</h4>
       <div>
-      <strong>Username:</strong> {auth.username}
+      <strong>Username:</strong> {user.username}
       </div>
       <div>
-        <strong>Authenticated:</strong> {auth.isAuthenticated ? 'Yes' : 'No'}
+        <strong>Authenticated user:</strong> {user.isAuthenticated ? 'Yes' : 'No'}
       </div>
       <div>
-        <strong>Token:</strong> {auth.accessToken ? 
-          `${auth.accessToken.substring(0, 15)}...` : 
+        <strong>Token:</strong> {user.accessToken ? 
+          `${user.accessToken.substring(0, 15)}...` : 
           'None'}
       </div>
       <div>
-        <strong>Role:</strong> {auth.role || 'None'}
+        <strong>Role:</strong> {user.role || 'None'}
       </div>
       <div>
-        <strong>2FA Required:</strong> {auth.requires2FA ? 'Yes' : 'No'}
+        <strong>2FA Required:</strong> {user.requires2FA ? 'Yes' : 'No'}
       </div>
       <div>
-        <strong>2FA Enabled:</strong> {auth.twoFactorEnabled ? 'Yes' : 'No'}
+        <strong>2FA Enabled:</strong> {user.twoFactorEnabled ? 'Yes' : 'No'}
       </div>
 
       <h4 style={{ margin: '0 0 8px 0' }}>User Debug</h4>

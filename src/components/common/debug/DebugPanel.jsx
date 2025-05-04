@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import services from '../../services/serviceSwitch';
 
 const DebugPanel = () => {
-  const auth = useSelector(state => state.auth.value);
+  const auth = useSelector(state => state.user.value);
   const user = useSelector(state => state.user.value);
   const [result, setResult] = React.useState(null);
   

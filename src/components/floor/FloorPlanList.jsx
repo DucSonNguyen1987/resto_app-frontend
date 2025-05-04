@@ -14,7 +14,7 @@ const FloorPlanList = () => {
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
   
   const navigate = useNavigate();
-  const user = useSelector(state => state.auth.value);
+  const user = useSelector(state => state.user.value);
   
   // Vérifier si l'utilisateur a les permissions pour créer/éditer des plans
   const canCreatePlan = ['ADMIN', 'OWNER', 'MANAGER'].includes(user.role);
