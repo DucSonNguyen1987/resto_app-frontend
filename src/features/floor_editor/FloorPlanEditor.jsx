@@ -97,7 +97,7 @@ const FloorPlanEditor = () => {
 
             // Notification et redirection
             alert('Plan de salle sauvegardé avec succès');
-            navigate('/floor-plans');
+            navigate('/floorPlans');
         } catch (error) {
             console.error('Erreur lors de la sauvegarde:', error);
             setError('Erreur lors de la sauvegarde. Veuillez réessayer.');

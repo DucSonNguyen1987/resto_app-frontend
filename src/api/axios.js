@@ -27,8 +27,9 @@ api.interceptors.request.use(
             const accessToken = authToken || userToken;
             
             if (accessToken) {
-                config.headers.Authorization = `Bearer ${accessToken}`;
+                config.headers.Authorization = ` ${accessToken}`;
                 console.log('✅ Token ajouté à la requête:', config.url);
+                console.log('Token utilisé:', accessToken.substring(0, 10) + '...');  // Loggez une partie du token pour vérification
             } else {
                 console.log('❌ Pas de token disponible pour:', config.url);
             }

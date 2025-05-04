@@ -27,17 +27,26 @@ const Login = () => {
         setError('');
 
         try {
+            console.log('Tentative de connexion avec:', { email });
             const result = await authService.login(email, password);
-
+            console.log('Résultat de la connexion:', result);
             if (result.success) {
                 if (result.requires2FA) {
                     // Si 2FA est requis, stocker le TempToken et rediriger
-                    dispatch(login({ requires2FA: true, tempToken: result.tempToken }));
-                    navigate('/verify-2fa');
+                    console.log('2FA requis, dispatch:', { requires2FA: true, tempToken: result.tempToken });
+                dispatch(login({ requires2FA: true, tempToken: result.tempToken }));
+                navigate('/verify-2fa');
                 } else {
                     // Sinon, procéder à la connexion normale
+                    console.log('Connexion réussie, dispatch des données utilisateur:', result.data);
                     dispatch(login(result.data));
-                    navigate('/dashboard');
+                    
+                     // Vérifier l'état Redux après le dispatch
+                setTimeout(() => {
+                    console.log('État Redux après connexion:', store.getState());
+                }, 100);
+                
+                navigate('/dashboard');
                 }
             } else {
                 setError(result.error || 'Identifiants invalides');
@@ -67,7 +76,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                
+
                     <div className='form-group'>
                         <label htmlFor='password'>Mot de passe</label>
                         <input

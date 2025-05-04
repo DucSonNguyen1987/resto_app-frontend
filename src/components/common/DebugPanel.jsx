@@ -4,14 +4,19 @@ import services from '../../services/serviceSwitch';
 
 const DebugPanel = () => {
   const auth = useSelector(state => state.auth.value);
+  const user = useSelector(state => state.user.value);
   const [result, setResult] = React.useState(null);
   
   const testApi = async (serviceName, methodName) => {
     try {
       setResult(`Appel à ${serviceName}.${methodName}...`);
+      console.log('État Redux avant appel:', { auth, user });
+      console.log('Token utilisé:', auth.accessToken ? `${auth.accessToken.substring(0, 15)}...` : 'Aucun');
       const response = await services[serviceName][methodName]();
+      console.log('Réponse complète:', response);
       setResult(JSON.stringify(response, null, 2));
     } catch (error) {
+      console.error('Erreur détaillée:', error);
       setResult(`Erreur: ${error.message}`);
     }
   };

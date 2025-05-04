@@ -23,16 +23,22 @@ const FloorPlanList = () => {
   useEffect(() => {
     const loadFloorPlans = async () => {
       try {
+        console.log('Début du chargement des plans de salle');
         setIsLoading(true);
         const response = await services.floorPlan.getAllFloorPlans();
         
+        // Vérifier l'état de l'authentification avant l'appel
+        console.log('Permissions utilisateur:', user.role);
+
         if (response.success) {
           setFloorPlans(response.data);
         } else {
+          console.error('Erreur de réponse:', response.error);
           setError(response.error || 'Erreur lors du chargement des plans de salle');
         }
       } catch (error) {
         console.error('Erreur lors du chargement des plans:', error);
+        console.error('Détails de l\'erreur:', error.response?.data || error.message);
         setError('Impossible de charger les plans de salle');
       } finally {
         setIsLoading(false);

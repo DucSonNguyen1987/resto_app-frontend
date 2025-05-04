@@ -3,7 +3,7 @@ import api from '../api/axios';
  * Service pour gérer les requêtes API liées aux plans de salle
  */
 
-const API_URL = '/floorplans';
+const API_URL = '/floorPlans';
 
 const floorPlanService = {
   // Récupérer tous les plans de salle
