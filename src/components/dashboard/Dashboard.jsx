@@ -248,7 +248,7 @@ const Dashboard = () => {
               </Link>
             </div>
 
-            <DebugPanel />
+           { /*<DebugPanel />*/}
           </div>
           
           {/* Section des réservations récentes */}

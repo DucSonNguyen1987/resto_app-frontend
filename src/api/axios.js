@@ -27,7 +27,7 @@ api.interceptors.request.use(
             const accessToken = authToken || userToken;
             
             if (accessToken) {
-                config.headers.Authorization = ` ${accessToken}`;
+                config.headers.Authorization = `Bearer ${accessToken}`;
                 console.log('✅ Token ajouté à la requête:', config.url);
                 console.log('Token utilisé:', accessToken.substring(0, 10) + '...');  // Loggez une partie du token pour vérification
             } else {
@@ -47,13 +47,14 @@ api.interceptors.response.use(
   
         // If the error status is 403 and there is no originalRequest._retry flag,
         // it means the token has expired and we need to refresh it
-        if (error.response?.status === 403 && !originalRequest._retry && store) {
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry && store) {
             originalRequest._retry = true;
   
             try {
-                const refreshToken = store.getState()?.user?.value?.refreshToken;
+                const refreshToken = store.getState()?.auth?.value?.refreshToken;
                 if (refreshToken) {
-                    const response = await api.post('/users/refreshToken', { refreshToken });
+                    console.log('Attempting to refresh token...');
+                    const response = await api.post('/auth/refreshToken', { refreshToken });
                     const { accessToken } = response.data;
         
                     store.dispatch(setAccessToken(accessToken));
@@ -62,9 +63,9 @@ api.interceptors.response.use(
                     originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                     return axios(originalRequest);
                 }
-            } catch (error) {
+            } catch (refreshError) {
                 // Handle refresh token error or redirect to login
-                console.error('Error refreshing token:', error);
+                console.error('Error refreshing token:', refreshError);
             }
         }
   

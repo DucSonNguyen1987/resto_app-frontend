@@ -9,6 +9,9 @@ import Register from './components/auth/Register';
 import TwoFactorVerify from './components/auth/TwoFactorVerify';
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
 import Navbar from "./components/common/NavBar";
+//import TokenDebugger from "./components/common/debug/TokenDebugger";
+import StateDebugger from "./components/common/debug/StateDebugger";
+
 
 // Composants pour la gestion du compte
 import TwoFactorManagement from './components/account/TwoFactorManagement';
@@ -141,6 +144,8 @@ function App() {
         {/* Page 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {<StateDebugger />}
+      {/* <TokenDebugger />*/}
     </div>
     </div>
    </Router>

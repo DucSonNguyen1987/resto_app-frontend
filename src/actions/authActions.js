@@ -1,6 +1,7 @@
 // src/actions/authActions.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { login } from '../reducers/authSlice';
+
 import { setUser, setTokens } from '../reducers/userSlice';
 import authService from '../services/authService';
 

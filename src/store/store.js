@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage';
 // Importation des reducers
 import authReducer from '../reducers/authSlice';
 import userReducer from '../store/slices/userSlice';
+import authMiddleware from './middleware/authMiddleware';
 
 // Configuration de la persistance pour les données USER et authentification
 const authPersistConfig = {
@@ -39,7 +40,7 @@ export const store = configureStore({
                 ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
                 ignoredPaths: ['register', 'rehydrate']
             },
-        })
+        }).concat(authMiddleware)
 });
 
 // Création du persistor pour redux persist

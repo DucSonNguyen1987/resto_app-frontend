@@ -13,6 +13,10 @@ const authService = {
             const response = await api.post('/auth/login', { email, password });
             
             // Check if 2FA is required
+            console.log('Attempting login with:', email);
+            const response = await api.post('/auth/login', { email, password });
+            
+            // Check if 2FA is required
             if (response.data.requires2FA) {
                 return {
                     success: true,
@@ -20,6 +24,8 @@ const authService = {
                     tempToken: response.data.tempToken
                 };
             }
+            
+            // Extract and normalize the user data
             
             // Extract and normalize the user data
             const userData = response.data.data || response.data;
@@ -42,8 +48,10 @@ const authService = {
             };
         } catch (error) {
             console.error('Login error:', error.response?.data || error.message);
+            console.error('Login error:', error.response?.data || error.message);
             return {
                 success: false,
+                error: error.response?.data?.message || 'Authentication failed'
                 error: error.response?.data?.message || 'Authentication failed'
             };
         }
