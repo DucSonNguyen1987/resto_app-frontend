@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Stage, Layer, Rect, Circle, Group, Text, Line } from 'react-konva';
+import { Stage, Layer, Rect, Circle, Group, Text, Line, Transformer } from 'react-konva';
 import './SeatingEditor.css';
 
 const SeatingEditor = () => {
@@ -361,8 +361,8 @@ const SeatingEditor = () => {
       <div className="canvas-container">
         <div className="canvas-wrapper">
           <Stage
-            width={800}
-            height={600}
+            width={500}
+            height={500}
             className="seating-canvas"
             onClick={handleStageClick}
           >
@@ -460,7 +460,7 @@ const SeatingEditor = () => {
                   draggable={mode === 'view'}
                   onClick={() => setSelectedObstacle(index)}
                   onDblClick={() => setSelectedObstacle(index)}
-                  onDragMove={(e) => {
+                  onDragEnd={(e) => {
                     const updatedObstacles = [...obstacles];
                     updatedObstacles[index] = { ...obstacle, x: e.target.x(), y: e.target.y() };
                     setObstacles(updatedObstacles);

@@ -10,7 +10,9 @@ const authService = {
 
     login: async (email, password) => {
         try {
-            const response = await api.post('/users/login', { email, password })
+            console.log('Tentative de connexion:', email);
+            const response = await api.post('/users/login', { email, password });
+            console.log('Réponse de connexion:', response.data);
 
             // Check si 2FA est requis
             if (response.data.requires2FA) {
@@ -22,7 +24,7 @@ const authService = {
             }
 
             // Login réussi sans 2FA
-            return { success: true, data: response.data.data };
+            return { success: true, data: response.data.data || response.data };
         } catch (error) {
             console.error('Erreur lors de la connexion:', error);
             return {
@@ -79,9 +81,9 @@ const authService = {
             const response = await api.post('/users/account', userData);
             return { success: true, data: response.data.data };
         } catch (error) {
-            console.error('Identifiant non trouvé', error)        
+            console.error('Identifiant non trouvé', error)
             return {
-                success: false, 
+                success: false,
                 error: error.response?.data?.error || 'User non trouvé'
             }
         }

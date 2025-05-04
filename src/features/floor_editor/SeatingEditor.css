@@ -1,7 +1,7 @@
 /* SeatingEditor.css */
 .seating-editor {
     display: flex;
-    height: 100vh;
+    height: 50vh;
     background-color: #F2F2F2;
   }
   
@@ -11,6 +11,7 @@
     background-color: white;
     padding: 24px;
     border-right: 1px solid #d1d5db;
+    overflow: auto;
   }
   
   .sidebar h2 {
@@ -69,6 +70,9 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    margin-bottom: 5vh;
+    background-color: white;
+    z-index: index 2;
   }
   
   .config-section h3 {

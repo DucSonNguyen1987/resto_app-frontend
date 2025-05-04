@@ -148,8 +148,9 @@
 .canvas-container {
   flex: 1;
   position: relative;
-  overflow: hidden;
+  overflow: hidden ;
   background-color: #fafafa;
+  height: 50vh;
 }
 
 .canvas-container .konvajs-content {

@@ -6,6 +6,8 @@ import DateSelector from '../common/DateSelector';
 import NewFloorPlanModal from '../floor/NewFloorPlanModal';
 import floorPlanService from '../../services/floorPlanService';
 import '../../styles/Dashboard.css';
+import DebugPanel from '../common/DebugPanel';
+
 
 // Services mock (à remplacer par de vraies API)
 import reservationService from '../../services/reservationService';
@@ -245,6 +247,8 @@ const Dashboard = () => {
                 <div className="shortcut-label">Paramètres</div>
               </Link>
             </div>
+
+            <DebugPanel />
           </div>
           
           {/* Section des réservations récentes */}

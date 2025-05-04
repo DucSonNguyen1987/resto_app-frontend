@@ -3,7 +3,7 @@ import api from '../api/axios';
  * Service pour gérer les requêtes API liées aux plans de salle
  */
 
-const API_URL = '/api/floorplans';
+const API_URL = '/floorplans';
 
 const floorPlanService = {
   // Récupérer tous les plans de salle
@@ -23,7 +23,7 @@ const floorPlanService = {
   // Récupérer les détails d'un plan de salle avec ses tables
   getFloorPlanDetails: async (floorPlanId) => {
     try {
-      const response = await api.get(`/floorplans/${floorPlanId}`);
+      const response = await api.get(`${API_URL}/${floorPlanId}`);
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error(`Erreur lors de la récupération du plan de salle ${floorPlanId}:`, error);
@@ -51,7 +51,7 @@ const floorPlanService = {
   // Mettre à jour un plan de salle existant
   updateFloorPlan: async (floorPlanId, floorPlanData) => {
     try {
-      const response = await api.put(`/floorplans/${floorPlanId}`, floorPlanData);
+      const response = await api.put(`${API_URL}/${floorPlanId}`, floorPlanData);
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du plan de salle ${floorPlanId}:`, error);
@@ -65,7 +65,7 @@ const floorPlanService = {
   // Supprimer un plan de salle
   deleteFloorPlan: async (floorPlanId) => {
     try {
-      const response = await api.delete(`/floorplans/${floorPlanId}`);
+      const response = await api.delete(`${API_URL}/${floorPlanId}`);
       return { success: true, message: response.data.message };
     } catch (error) {
       console.error(`Erreur lors de la suppression du plan de salle ${floorPlanId}:`, error);
@@ -79,7 +79,7 @@ const floorPlanService = {
   // Mettre à jour les obstacles d'un plan de salle
   updateObstacles: async (floorPlanId, obstacles) => {
     try {
-      const response = await api.post(`/floorplans/${floorPlanId}/obstacles`, { obstacles });
+      const response = await api.post(`${API_URL}/${floorPlanId}/obstacles`, { obstacles });
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error(`Erreur lors de la mise à jour des obstacles pour le plan ${floorPlanId}:`, error);

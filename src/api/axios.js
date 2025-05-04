@@ -21,14 +21,21 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         if (store) {
-            const accessToken = store.getState()?.user?.value?.accessToken;
+            // Vérifiez les deux emplacements possibles du token
+            const authToken = store.getState()?.auth?.value?.accessToken;
+            const userToken = store.getState()?.user?.value?.accessToken;
+            const accessToken = authToken || userToken;
+            
             if (accessToken) {
                 config.headers.Authorization = `Bearer ${accessToken}`;
+                console.log('✅ Token ajouté à la requête:', config.url);
+            } else {
+                console.log('❌ Pas de token disponible pour:', config.url);
             }
         }
         return config;
-  },
-  (error) => Promise.reject(error)
+    },
+    (error) => Promise.reject(error)
 );
 
 // Add a response interceptor

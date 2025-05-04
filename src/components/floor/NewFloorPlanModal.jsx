@@ -16,10 +16,10 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
     },
     status: 'draft'
   });
-  
+
   // État pour la validation du formulaire
   const [errors, setErrors] = useState({});
-  
+
   // Gérer les changements dans les champs du formulaire
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,7 +27,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
       ...formData,
       [name]: value
     });
-    
+
     // Effacer l'erreur pour ce champ
     if (errors[name]) {
       setErrors({
@@ -36,7 +36,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
       });
     }
   };
-  
+
   // Gérer les changements dans les dimensions
   const handleDimensionChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +47,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
         [name]: name === 'unit' ? value : parseInt(value, 10)
       }
     });
-    
+
     // Effacer l'erreur pour ce champ
     if (errors[`dimensions.${name}`]) {
       setErrors({
@@ -56,36 +56,36 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
       });
     }
   };
-  
+
   // Valider le formulaire avant la soumission
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Le nom est obligatoire';
     }
-    
+
     if (formData.dimensions.width < 100) {
       newErrors['dimensions.width'] = 'La largeur doit être d\'au moins 100';
     }
-    
+
     if (formData.dimensions.height < 100) {
       newErrors['dimensions.height'] = 'La hauteur doit être d\'au moins 100';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // Gérer la soumission du formulaire
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       onSave(formData);
     }
   };
-  
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -99,7 +99,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
             &times;
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-group">
@@ -115,68 +115,13 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
               />
               {errors.name && <div className="error-text">{errors.name}</div>}
             </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="width">Largeur *</label>
-                <input
-                  type="number"
-                  id="width"
-                  name="width"
-                  value={formData.dimensions.width}
-                  onChange={handleDimensionChange}
-                  min="100"
-                  className={errors['dimensions.width'] ? 'has-error' : ''}
-                  required
-                />
-                {errors['dimensions.width'] && <div className="error-text">{errors['dimensions.width']}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="height">Hauteur *</label>
-                <input
-                  type="number"
-                  id="height"
-                  name="height"
-                  value={formData.dimensions.height}
-                  onChange={handleDimensionChange}
-                  min="100"
-                  className={errors['dimensions.height'] ? 'has-error' : ''}
-                  required
-                />
-                {errors['dimensions.height'] && <div className="error-text">{errors['dimensions.height']}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="unit">Unité</label>
-                <select
-                  id="unit"
-                  name="unit"
-                  value={formData.dimensions.unit}
-                  onChange={handleDimensionChange}
-                >
-                  <option value="pixels">Pixels</option>
-                  <option value="cm">Centimètres</option>
-                  <option value="meters">Mètres</option>
-                </select>
-              </div>
 
-              <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows="3"
-              />
+
+            <div className='modal-content'>
+              <SeatingEditor />
             </div>
 
-            
-            </div>
 
-            <SeatingEditor />
-            
             <div className="form-group">
               <label htmlFor="status">Statut initial</label>
               <select
@@ -191,7 +136,7 @@ const NewFloorPlanModal = ({ onClose, onSave }) => {
               </select>
             </div>
           </div>
-          
+
           <div className="modal-footer">
             <button
               type="button"
