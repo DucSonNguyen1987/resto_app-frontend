@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../reducers/authSlice';
+import { logout } from '../../reducers/userSlice';
 
 const NavBar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -11,7 +11,7 @@ const NavBar = () => {
   const dispatch = useDispatch();
   
   // Récupérer les informations d'authentification
-  const { isAuthenticated, username, firstname, lastname, email, role } = useSelector(state => state.auth.value);
+  const { isAuthenticated, username, firstname, lastname, email, role } = useSelector(state => state.user.value);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);

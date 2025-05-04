@@ -3,7 +3,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 const StateDebugger = () => {
-  const auth = useSelector(state => state.auth.value);
   const user = useSelector(state => state.user.value);
   
   // Style pour le conteneur de débogage
@@ -56,7 +55,6 @@ const StateDebugger = () => {
       <div style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '14px' }}>
         État Redux (DEBUG)
       </div>
-      {renderState(auth, 'Auth')}
       {renderState(user, 'User')}
     </div>
   );

@@ -1,17 +1,30 @@
-// src/reducers/user.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   value: {
+    // User data
+    id: null,
     username: null,
     email: null,
     firstname: null,
     lastname: null,
     phone: null,
     role: null,
+    
+    // Authentication state
+    isAuthenticated: false,
+    requires2FA: false,
+    tempToken: null,
     accessToken: null,
     refreshToken: null,
-    isAuthenticated: false,
+    
+    // 2FA related
+    twoFactorEnabled: false,
+    setupQRCode: null,
+    setupSecret: null,
+    backupCodes: [],
+    
+    // UI state
     isLoading: false,
     error: null,
     lastLogin: null
@@ -22,35 +35,61 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    // Action pour définir les données utilisateur lors de la connexion
-    setUser: (state, action) => {
-      state.value = {
-        ...state.value,
-        ...action.payload,
-        isAuthenticated: true,
-        error: null,
-        lastLogin: new Date().toISOString()
-      };
+    // Action for login (handles both regular and 2FA needed cases)
+    login: (state, action) => {
+      // If 2FA is required, just set minimal auth state
+      if (action.payload.requires2FA) {
+        state.value.requires2FA = true;
+        state.value.tempToken = action.payload.tempToken;
+      } else {
+        // Normal login sets all user data
+        state.value.isAuthenticated = true;
+        state.value.id = action.payload.id;
+        state.value.username = action.payload.username;
+        state.value.email = action.payload.email;
+        state.value.firstname = action.payload.firstname;
+        state.value.lastname = action.payload.lastname;
+        state.value.phone = action.payload.phone;
+        state.value.role = action.payload.role;
+        state.value.accessToken = action.payload.accessToken;
+        state.value.refreshToken = action.payload.refreshToken;
+        state.value.twoFactorEnabled = action.payload.twoFactorEnabled || false;
+        state.value.lastLogin = new Date().toISOString();
+        state.value.requires2FA = false;
+        state.value.tempToken = null;
+        state.value.error = null;
+      }
     },
 
-    // Action pour définir les tokens
-    setTokens: (state, action) => {
-      state.accessToken = action.payload.accessToken;
-      state.refreshToken = action.payload.refreshToken;
-      state.error = action.payload
-<<<<<<< HEAD
-  },
-    
-=======
+    // Action for 2FA verification success
+    verify2FA: (state, action) => {
+      state.value.isAuthenticated = true;
+      state.value.requires2FA = false;
+      state.value.tempToken = null;
+      state.value.id = action.payload.id;
+      state.value.username = action.payload.username;
+      state.value.email = action.payload.email;
+      state.value.firstname = action.payload.firstname;
+      state.value.lastname = action.payload.lastname;
+      state.value.phone = action.payload.phone;
+      state.value.accessToken = action.payload.accessToken;
+      state.value.refreshToken = action.payload.refreshToken;
+      state.value.role = action.payload.role;
+      state.value.twoFactorEnabled = true;
+      state.value.lastLogin = new Date().toISOString();
     },
 
->>>>>>> bbafae202c94b5ad6c6ede5dbfa355e266ced77d
-    // Action pour mettre à jour uniquement le token d'accès
+    // Action for logging out
+    logout: (state) => {
+      state.value = initialState.value;
+    },
+
+    // Action for updating only the access token (for token refresh)
     setAccessToken: (state, action) => {
       state.value.accessToken = action.payload;
     },
 
-    // Action pour mettre à jour le profil utilisateur
+    // Action for updating user profile data
     updateUserProfile: (state, action) => {
       state.value = {
         ...state.value,
@@ -58,56 +97,51 @@ export const userSlice = createSlice({
       };
     },
 
-    // Action pour définir l'état de chargement
+    // Actions for 2FA setup and management
+    set2FASetupData: (state, action) => {
+      state.value.setupQRCode = action.payload.qrCode;
+      state.value.setupSecret = action.payload.secret;
+    },
+
+    enable2FA: (state, action) => {
+      state.value.twoFactorEnabled = true;
+      state.value.backupCodes = action.payload.backupCodes;
+    },
+
+    disable2FA: (state) => {
+      state.value.twoFactorEnabled = false;
+      state.value.backupCodes = [];
+    },
+
+    setBackupCodes: (state, action) => {
+      state.value.backupCodes = action.payload;
+    },
+
+    // Loading and error state management
     setLoading: (state, action) => {
       state.value.isLoading = action.payload;
     },
 
-    // Action pour définir une erreur
     setError: (state, action) => {
       state.value.error = action.payload;
-    },
-
-    // Action pour la déconnexion
-    logout: (state) => {
-      // Conserver certaines données non sensibles comme l'erreur
-      const { error } = state.value;
-      state.value = {
-        ...initialState.value,
-        error
-      };
     }
   }
 });
 
-// Export des actions
-<<<<<<< HEAD
-export const { 
-  setUser,
-  setTokens,
-  setAccessToken, 
-  updateUserProfile, 
-  setLoading, 
-  setError, 
-  logout 
-=======
+// Export actions
 export const {
-  setUser,
-  setTokens,
+  login,
+  verify2FA,
+  logout,
   setAccessToken,
   updateUserProfile,
+  set2FASetupData,
+  enable2FA,
+  disable2FA,
+  setBackupCodes,
   setLoading,
-  setError,
-  logout
->>>>>>> bbafae202c94b5ad6c6ede5dbfa355e266ced77d
+  setError
 } = userSlice.actions;
 
-// Sélecteurs
-export const selectUser = (state) => state.user.value;
-export const selectIsAuthenticated = (state) => state.user.value.isAuthenticated;
-export const selectUserRole = (state) => state.user.value.role;
-export const selectAccessToken = (state) => state.user.value.accessToken;
-export const selectRefreshToken = (state) => state.user.value.refreshToken;
-
-// Export du réducteur
+// Export reducer
 export default userSlice.reducer;

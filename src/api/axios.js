@@ -21,10 +21,8 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         if (store) {
-            // Vérifiez les deux emplacements possibles du token
-            const authToken = store.getState()?.auth?.value?.accessToken;
-            const userToken = store.getState()?.user?.value?.accessToken;
-            const accessToken = authToken || userToken;
+            // Get token from the centralized user state
+            const accessToken = store.getState()?.user?.value?.accessToken;
             
             if (accessToken) {
                 config.headers.Authorization = `Bearer ${accessToken}`;
@@ -51,7 +49,7 @@ api.interceptors.response.use(
             originalRequest._retry = true;
   
             try {
-                const refreshToken = store.getState()?.auth?.value?.refreshToken;
+                const refreshToken = store.getState()?.user?.value?.refreshToken;
                 if (refreshToken) {
                     console.log('Attempting to refresh token...');
                     const response = await api.post('/auth/refreshToken', { refreshToken });

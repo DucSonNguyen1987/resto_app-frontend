@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setUser } from '../../reducers/userSlice';
+import { login } from '../../reducers/userSlice';
 import authService from '../../services/authService';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/2fa.css';
@@ -81,7 +81,7 @@ const Register = () => {
 
             if (result.success) {
                 // Stockage des données utilisateur dans Redux
-                dispatch(setUser(result.data));
+                dispatch(login(result.data));
                 
                 // Redirection vers le tableau de bord
                 navigate('/dashboard');

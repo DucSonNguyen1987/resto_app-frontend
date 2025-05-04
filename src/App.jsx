@@ -30,7 +30,7 @@ const NotFound = () => <div className="card"><h2>404 - Page non trouvée</h2><p>
 
 // Protège les routes nécessitant une authentification
 const PrivateRoute = ({children}) => {
-  const { isAuthenticated } = useSelector(state => state.auth.value);
+  const { isAuthenticated } = useSelector(state => state.user.value);
 
   if(!isAuthenticated) {
     return <Navigate to='/login' />

@@ -93,7 +93,7 @@ const floorPlanService = {
   // Changer le statut d'un plan de salle (draft, active, inactive)
   changeStatus: async (floorPlanId, status) => {
     try {
-      const response = await api.patch(`'/floorplans'/${floorPlanId}/status`, { status });
+      const response = await api.patch(`/floorPlans/${floorPlanId}/status`, { status });
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error(`Erreur lors du changement de statut du plan ${floorPlanId}:`, error);

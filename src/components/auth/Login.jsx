@@ -13,7 +13,7 @@ const Login = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const requires2FA = useSelector(state => state.auth.value.requires2FA);
+    const requires2FA = useSelector(state => state.user.value.requires2FA);
 
     // Si le user doit compléter la 2FA, le rediriger vers cette page
     React.useEffect(() => {
