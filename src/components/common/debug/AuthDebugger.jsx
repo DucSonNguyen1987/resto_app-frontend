@@ -1,7 +1,7 @@
 // src/components/debug/AuthDebugger.jsx
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { store } from '../../store/store';
+import { store } from '../../../store/store';
 
 const AuthDebugger = () => {
   const [results, setResults] = useState({});
