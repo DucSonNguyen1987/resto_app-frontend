@@ -6,14 +6,14 @@ import './App.css';
 // Composants d'authentification
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import TwoFactorVerify from './components/auth/TwoFactorVerify';
-import TwoFactorSetup from './components/auth/TwoFactorSetup';
 import Navbar from "./components/common/NavBar";
 //import TokenDebugger from "./components/common/debug/TokenDebugger";
 import StateDebugger from "./components/common/debug/StateDebugger";
 
 
 // Composants pour la gestion du compte
+import TwoFactorSetup from './components/auth/TwoFactorSetup';
+import TwoFactorVerify from "./components/auth/TwoFactorVerify";
 import TwoFactorManagement from './components/account/TwoFactorManagement';
 import AccountSettings from './components/account/AccountSettings';
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import services from '../../services/serviceSwitch';
+//import services from '../../services/serviceSwitch';
 
 // Composant pour la création d'un nouveau plan
 import NewFloorPlanModal from './NewFloorPlanModal';

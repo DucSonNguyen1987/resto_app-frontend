@@ -1,6 +1,6 @@
 // src/services/authService.js
 import axios from '../api/axios';
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 
 const authService = {
   // Connexion avec email et mot de passe

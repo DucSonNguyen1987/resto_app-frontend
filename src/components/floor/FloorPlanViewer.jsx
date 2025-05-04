@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect, Group, Text, Line } from 'react-konva';
-import services from '../../services/serviceSwitch';
+//import services from '../../services/serviceSwitch';
 
 // Composants
 import TableShape from '../../features/floor_editor/TableShape';

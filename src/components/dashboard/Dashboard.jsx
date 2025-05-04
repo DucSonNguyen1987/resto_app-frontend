@@ -6,7 +6,7 @@ import DateSelector from '../common/DateSelector';
 import NewFloorPlanModal from '../floor/NewFloorPlanModal';
 import floorPlanService from '../../services/floorPlanService';
 import '../../styles/Dashboard.css';
-import DebugPanel from '../common/DebugPanel';
+import DebugPanel from '../common/debug/DebugPanel';
 
 
 // Services mock (à remplacer par de vraies API)

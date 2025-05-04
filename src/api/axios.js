@@ -4,7 +4,7 @@ import authService from '../services/authService';
 
 // Instance axios de base
 const api = axios.create({
-  baseURL: process.env.VITE_BACKEND_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json'
   }
