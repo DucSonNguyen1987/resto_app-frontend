@@ -39,7 +39,7 @@ const userSlice = createSlice ({
         },
 
         // Action pour définir le profile utilisateur
-        setUseProfile : (state, action) => {
+        setUser : (state, action) => {
             state.profile = action.payload;
             state.isLoading = false;
         },
@@ -59,7 +59,7 @@ export const {
     startLoading,
     hasError,
     setTokens,
-    setUseProfile,
+    setUser,
     logout
 } = userSlice.actions;
 

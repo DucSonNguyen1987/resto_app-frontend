@@ -6,20 +6,13 @@ import api from '../api/axios';
 
 const authService = {
 
-    // Authentifie un USEr
-
+    // Authentifie un User
     login: async (email, password) => {
         try {
-            console.log('Tentative de connexion:', email);
-            const response = await api.post('/users/login', { email, password });
-            console.log('Réponse de connexion:', response.data);
-            console.log('Structure de la réponse:', {
-                data: response.data,
-                nestedData: response.data.data,
-                hasData: !!response.data.data
-            });
-
-            // Check si 2FA est requis
+            console.log('Attempting login with:', email);
+            const response = await api.post('/auth/login', { email, password });
+            
+            // Check if 2FA is required
             if (response.data.requires2FA) {
                 return {
                     success: true,
@@ -27,50 +20,53 @@ const authService = {
                     tempToken: response.data.tempToken
                 };
             }
-
-            // Vérifiez la structure de la réponse
+            
+            // Extract and normalize the user data
             const userData = response.data.data || response.data;
-            console.log('Données utilisateur extraites:', userData);
-
-            // Créez un objet conforme à la structure attendue
-            const normalizedUserData = {
-                username: userData.username || '',
-                email: userData.email || '',
-                firstname: userData.firstname || '',
-                lastname: userData.lastname || '',
-                accessToken: userData.accessToken || userData.token || '',  // Parfois le token peut avoir un nom différent
-                refreshToken: userData.refreshToken || '',
-                role: userData.role || 'USER',  // Valeur par défaut si non fourni
-                twoFactorEnabled: userData.twoFactorEnabled || false
+            console.log('Login successful, received data:', userData);
+            
+            // Ensure token is properly formatted in the store
+            return { 
+                success: true, 
+                data: {
+                    id: userData.id || userData._id,
+                    username: userData.username,
+                    email: userData.email,
+                    firstname: userData.firstname || '',
+                    lastname: userData.lastname || '',
+                    accessToken: userData.accessToken || userData.token,
+                    refreshToken: userData.refreshToken,
+                    role: userData.role || 'USER',
+                    twoFactorEnabled: userData.twoFactorEnabled || false
+                }
             };
-
-            console.log('Données normalisées:', normalizedUserData);
-
-            // Vérifiez que toutes les propriétés attendues existent
-            const expectedProps = ['username', 'email', 'firstname', 'lastname', 'accessToken', 'refreshToken', 'role'];
-            const missingProps = expectedProps.filter(prop => !userData[prop]);
-
-            if (missingProps.length > 0) {
-                console.warn('Propriétés manquantes dans la réponse:', missingProps);
-            }
-
-
-
-            // Login réussi sans 2FA
-            return { success: true, data: response.data.data || response.data };
         } catch (error) {
-            console.error('Erreur lors de la connexion:', error);
+            console.error('Login error:', error.response?.data || error.message);
             return {
                 success: false,
-                error: error.response?.data?.error || 'Identifiants invalides'
+                error: error.response?.data?.message || 'Authentication failed'
             };
         }
     },
+    
     // Enregistre un nouvel USER
     register: async (userData) => {
         try {
             const response = await api.post('/users/register', userData);
-            return { success: true, data: response.data.data };
+            return { 
+                success: true, 
+                data: {
+                    id: response.data.data.id || response.data.data._id,
+                    username: response.data.data.username,
+                    email: response.data.data.email,
+                    firstname: response.data.data.firstname || '',
+                    lastname: response.data.data.lastname || '',
+                    accessToken: response.data.data.accessToken || response.data.data.token,
+                    refreshToken: response.data.data.refreshToken,
+                    role: response.data.data.role || 'USER',
+                    twoFactorEnabled: response.data.data.twoFactorEnabled || false
+                }
+            };
         } catch (error) {
             console.error('Erreur lors de l\'inscription:', error);
             return {
@@ -83,8 +79,8 @@ const authService = {
     // Déconnecte le USER
     logout: async () => {
         try {
-            const response = await api.post('/users/logout');
-            return { success: true, message: response.data.data };
+            const response = await api.post('/auth/logout');
+            return { success: true, message: response.data.message || 'Déconnexion réussie' };
         } catch (error) {
             console.error('Erreur lors de la déconnexion:', error);
             return {
@@ -97,8 +93,12 @@ const authService = {
     // Refresh le token
     refreshToken: async (refreshToken) => {
         try {
-            const response = await api.post('/users/refreshToken', { refreshToken });
-            return { success: true, accessToken: response.data.accessToken };
+            const response = await api.post('/auth/refreshToken', { refreshToken });
+            return { 
+                success: true, 
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken || refreshToken // Retourner le nouveau refreshToken s'il existe, sinon garder l'ancien
+            };
         } catch (error) {
             console.error('Erreur lors du rafraîchissement du token:', error);
             return {
@@ -108,19 +108,82 @@ const authService = {
         }
     },
 
-
-    getCurrentUser: async (userData) => {
+    // Récupérer les informations du profil utilisateur actuel
+    getCurrentUser: async () => {
         try {
-            const response = await api.post('/users/account', userData);
-            return { success: true, data: response.data.data };
+            const response = await api.get('/auth/profile');
+            const userData = response.data.data || response.data;
+            
+            return { 
+                success: true, 
+                data: {
+                    id: userData.id || userData._id,
+                    username: userData.username,
+                    email: userData.email,
+                    firstname: userData.firstname || '',
+                    lastname: userData.lastname || '',
+                    phone: userData.phone || '',
+                    role: userData.role || 'USER',
+                    twoFactorEnabled: userData.twoFactorEnabled || false
+                }
+            };
         } catch (error) {
-            console.error('Identifiant non trouvé', error)
+            console.error('Erreur lors de la récupération du profil:', error);
             return {
                 success: false,
-                error: error.response?.data?.error || 'User non trouvé'
-            }
+                error: error.response?.data?.error || 'Erreur lors de la récupération du profil'
+            };
+        }
+    },
+    
+    // Mettre à jour le profil utilisateur
+    updateProfile: async (userData) => {
+        try {
+            const response = await api.put('/auth/profile', userData);
+            const updatedUserData = response.data.data || response.data;
+            
+            return { 
+                success: true, 
+                data: {
+                    id: updatedUserData.id || updatedUserData._id,
+                    username: updatedUserData.username,
+                    email: updatedUserData.email,
+                    firstname: updatedUserData.firstname || '',
+                    lastname: updatedUserData.lastname || '',
+                    phone: updatedUserData.phone || '',
+                    role: updatedUserData.role || 'USER',
+                    twoFactorEnabled: updatedUserData.twoFactorEnabled || false
+                }
+            };
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour du profil:', error);
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Erreur lors de la mise à jour du profil'
+            };
+        }
+    },
+    
+    // Changer le mot de passe
+    changePassword: async (currentPassword, newPassword) => {
+        try {
+            const response = await api.post('/auth/change-password', {
+                currentPassword,
+                newPassword
+            });
+            
+            return { 
+                success: true, 
+                message: response.data.message || 'Mot de passe modifié avec succès'
+            };
+        } catch (error) {
+            console.error('Erreur lors du changement de mot de passe:', error);
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Erreur lors du changement de mot de passe'
+            };
         }
     }
 };
 
-export default authService;                                                        
+export default authService;
