@@ -32,6 +32,13 @@ export const userSlice = createSlice({
         lastLogin: new Date().toISOString()
       };
     },
+
+    // Action pour définir les tokens
+    setTokens: (state, action) => {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+      state.error = action.payload
+  },
     
     // Action pour mettre à jour uniquement le token d'accès
     setAccessToken: (state, action) => {
@@ -70,7 +77,8 @@ export const userSlice = createSlice({
 
 // Export des actions
 export const { 
-  setUser, 
+  setUser,
+  setTokens,
   setAccessToken, 
   updateUserProfile, 
   setLoading, 
