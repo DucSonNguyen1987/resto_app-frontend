@@ -1,0 +1,89 @@
+[33mcommit 5f0d0520fb5c8f11286075d43a9ab9aaf6d94bd1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sun May 4 13:32:17 2025 +0200
+
+    error 401 bis
+
+[33mcommit eb7f3d0fcf3213a41c74316bff0d48bb0168431e[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sun May 4 11:49:55 2025 +0200
+
+    error 403
+
+[33mcommit 9f868cf91a20e08254bb9c76f0a2514321dbc59f[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sat May 3 16:05:49 2025 +0200
+
+    upgrade Seating Editor
+
+[33mcommit 11b544b6e2f0a2b3249fe6338332e7cf413ab71d[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sat May 3 14:22:33 2025 +0200
+
+    SeatingEditor lucide-react
+
+[33mcommit 57fadcd0627fe0adf4a4e4bcdd216a57cb15cde5[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sat May 3 12:09:45 2025 +0200
+
+    debug part 2
+
+[33mcommit be341761e369c78c73de08f1cb9a1517e291f79c[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Sat May 3 11:35:30 2025 +0200
+
+    searching for the bug
+
+[33mcommit b2e135929d1d154302aed56ef8369fb58417cdab[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 20:13:57 2025 +0200
+
+    dashbord visible
+
+[33mcommit 5feee6b519d5c01156aa112e8f988882bca4e35f[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 19:55:32 2025 +0200
+
+    dashboard start
+
+[33mcommit 622b35d9caf6324823c0db2985939631450ffa38[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 16:04:01 2025 +0200
+
+    step 1 konva
+
+[33mcommit 866a2481f66c08916b78851a4cf149a5078c29e7[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 14:08:07 2025 +0200
+
+    début Plan Editor
+
+[33mcommit a9fc9d1ebbece3777c220f7bfe7d7df153ec780f[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 11:07:18 2025 +0200
+
+    login working
+
+[33mcommit 97d93e5507fa41c7dc1cbac8c7dd246c39a4b3e0[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 10:04:12 2025 +0200
+
+    searching foe errors
+
+[33mcommit 303375355db0fa470aef16c2fc86290dc4a2c9d0[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Thu May 1 01:33:15 2025 +0200
+
+    login module
+
+[33mcommit d2f680618e086c9dd1656cbdf1cdb5edf7c03088[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Wed Apr 30 12:51:05 2025 +0200
+
+    second commit
+
+[33mcommit a01a43fd7ec941f7cfc07d2e154f415941247d1d[m
+Author: Duc Son Nguyen <duc.son.nguyen48@gmail.com>
+Date:   Wed Apr 30 11:23:38 2025 +0200
+
+    first commit

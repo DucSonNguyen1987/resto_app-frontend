@@ -32,12 +32,19 @@ export const userSlice = createSlice({
         lastLogin: new Date().toISOString()
       };
     },
-    
+
+    // Action pour définir les tokens
+    setTokens: (state, action) => {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+      state.error = action.payload
+    },
+
     // Action pour mettre à jour uniquement le token d'accès
     setAccessToken: (state, action) => {
       state.value.accessToken = action.payload;
     },
-    
+
     // Action pour mettre à jour le profil utilisateur
     updateUserProfile: (state, action) => {
       state.value = {
@@ -45,17 +52,17 @@ export const userSlice = createSlice({
         ...action.payload
       };
     },
-    
+
     // Action pour définir l'état de chargement
     setLoading: (state, action) => {
       state.value.isLoading = action.payload;
     },
-    
+
     // Action pour définir une erreur
     setError: (state, action) => {
       state.value.error = action.payload;
     },
-    
+
     // Action pour la déconnexion
     logout: (state) => {
       // Conserver certaines données non sensibles comme l'erreur
@@ -69,13 +76,14 @@ export const userSlice = createSlice({
 });
 
 // Export des actions
-export const { 
-  setUser, 
-  setAccessToken, 
-  updateUserProfile, 
-  setLoading, 
-  setError, 
-  logout 
+export const {
+  setUser,
+  setTokens,
+  setAccessToken,
+  updateUserProfile,
+  setLoading,
+  setError,
+  logout
 } = userSlice.actions;
 
 // Sélecteurs

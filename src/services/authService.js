@@ -6,20 +6,14 @@ import api from '../api/axios';
 
 const authService = {
 
-    // Authentifie un USEr
+    // Authentifie un User
 
     login: async (email, password) => {
         try {
-            console.log('Tentative de connexion:', email);
-            const response = await api.post('/users/login', { email, password });
-            console.log('Réponse de connexion:', response.data);
-            console.log('Structure de la réponse:', {
-                data: response.data,
-                nestedData: response.data.data,
-                hasData: !!response.data.data
-            });
-
-            // Check si 2FA est requis
+            console.log('Attempting login with:', email);
+            const response = await api.post('/auth/login', { email, password });
+            
+            // Check if 2FA is required
             if (response.data.requires2FA) {
                 return {
                     success: true,
@@ -27,42 +21,30 @@ const authService = {
                     tempToken: response.data.tempToken
                 };
             }
-
-            // Vérifiez la structure de la réponse
+            
+            // Extract and normalize the user data
             const userData = response.data.data || response.data;
-            console.log('Données utilisateur extraites:', userData);
-
-            // Créez un objet conforme à la structure attendue
-            const normalizedUserData = {
-                username: userData.username || '',
-                email: userData.email || '',
-                firstname: userData.firstname || '',
-                lastname: userData.lastname || '',
-                accessToken: userData.accessToken || userData.token || '',  // Parfois le token peut avoir un nom différent
-                refreshToken: userData.refreshToken || '',
-                role: userData.role || 'USER',  // Valeur par défaut si non fourni
-                twoFactorEnabled: userData.twoFactorEnabled || false
+            console.log('Login successful, received data:', userData);
+            
+            // Ensure token is properly formatted in the store
+            return { 
+                success: true, 
+                data: {
+                    username: userData.username,
+                    email: userData.email,
+                    firstname: userData.firstname || '',
+                    lastname: userData.lastname || '',
+                    accessToken: userData.accessToken || userData.token,
+                    refreshToken: userData.refreshToken,
+                    role: userData.role || 'USER',
+                    twoFactorEnabled: userData.twoFactorEnabled || false
+                }
             };
-
-            console.log('Données normalisées:', normalizedUserData);
-
-            // Vérifiez que toutes les propriétés attendues existent
-            const expectedProps = ['username', 'email', 'firstname', 'lastname', 'accessToken', 'refreshToken', 'role'];
-            const missingProps = expectedProps.filter(prop => !userData[prop]);
-
-            if (missingProps.length > 0) {
-                console.warn('Propriétés manquantes dans la réponse:', missingProps);
-            }
-
-
-
-            // Login réussi sans 2FA
-            return { success: true, data: response.data.data || response.data };
         } catch (error) {
-            console.error('Erreur lors de la connexion:', error);
+            console.error('Login error:', error.response?.data || error.message);
             return {
                 success: false,
-                error: error.response?.data?.error || 'Identifiants invalides'
+                error: error.response?.data?.message || 'Authentication failed'
             };
         }
     },

@@ -27,33 +27,30 @@ const Login = () => {
         setError('');
 
         try {
-            console.log('Tentative de connexion avec:', { email });
+            console.log('Attempting login with:', email);
+            
             const result = await authService.login(email, password);
-            console.log('Résultat de la connexion:', result);
+            console.log('Login result:', result);
+            
             if (result.success) {
                 if (result.requires2FA) {
-                    // Si 2FA est requis, stocker le TempToken et rediriger
-                    console.log('2FA requis, dispatch:', { requires2FA: true, tempToken: result.tempToken });
-                dispatch(login({ requires2FA: true, tempToken: result.tempToken }));
-                navigate('/verify-2fa');
+                    console.log('2FA required, dispatching with token:', result.tempToken);
+                    dispatch(login({ 
+                        requires2FA: true, 
+                        tempToken: result.tempToken 
+                    }));
+                    navigate('/verify-2fa');
                 } else {
-                    // Sinon, procéder à la connexion normale
-                    console.log('Connexion réussie, dispatch des données utilisateur:', result.data);
+                    console.log('Login successful, dispatching user data');
                     dispatch(login(result.data));
                     
-                     // Vérifier l'état Redux après le dispatch
-                setTimeout(() => {
-                    console.log('État Redux après connexion:', store.getState());
-                }, 100);
-                
-                navigate('/dashboard');
                 }
             } else {
-                setError(result.error || 'Identifiants invalides');
+                setError(result.error || 'Invalid credentials');
             }
         } catch (error) {
-            console.error('Erreur lors de la connexion', error);
-            setError('Une erreur est survenue. Veuillez réessayer.')
+            console.error('Login error:', error);
+            setError('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
