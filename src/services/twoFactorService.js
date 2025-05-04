@@ -6,7 +6,7 @@ const twoFactorService = {
   // Générer un nouveau secret et QR code pour le setup 2FA
   setup2FA: async () => {
     try {
-      const response = await axios.post('/users/2fa/setup');
+      const response = await axios.post('/2fa/setup');
       
       // Générer un QR code à partir de l'URL otpauth
       const qrCode = await QRCode.toDataURL(response.data.otpauthUrl);
@@ -30,7 +30,7 @@ const twoFactorService = {
   // Vérifier le code OTP lors de la configuration
   verify2FASetup: async (token, code) => {
     try {
-      const response = await axios.post('/users/2fa/verify-setup', { token, code });
+      const response = await axios.post('/2fa/verify-setup', { token, code });
       
       return {
         success: true,
@@ -50,7 +50,7 @@ const twoFactorService = {
   // Vérifier le code OTP lors de la connexion
   verify2FA: async (tempToken, code) => {
     try {
-      const response = await axios.post('/users/2fa/verify', { tempToken, code });
+      const response = await axios.post('/2fa/verify', { tempToken, code });
       
       localStorage.setItem('accessToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
@@ -75,7 +75,7 @@ const twoFactorService = {
   // Désactiver la 2FA
   disable2FA: async (password) => {
     try {
-      const response = await axios.post('/users/2fa/disable', { password });
+      const response = await axios.post('/2fa/disable', { password });
       
       return {
         success: true,
@@ -93,7 +93,7 @@ const twoFactorService = {
   // Générer de nouveaux codes de secours
   generateBackupCodes: async () => {
     try {
-      const response = await axios.post('/users/2fa/generate-backup-codes');
+      const response = await axios.post('/2fa/generate-backup-codes');
       
       return {
         success: true,
