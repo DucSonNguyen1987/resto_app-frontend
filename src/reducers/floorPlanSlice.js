@@ -147,7 +147,6 @@ export const floorPlanSlice = createSlice({
       }
     },
 
-
     // Supprimer une table
     deleteTable: (state, action) => {
       state.value.tables = state.value.tables.filter(
@@ -159,6 +158,7 @@ export const floorPlanSlice = createSlice({
     setTables: (state, action) => {
       state.value.tables = action.payload;
     },
+    
     // Mettre à jour les états de chargement et d'erreur
     setLoading: (state, action) => {
       state.value.loading = action.payload;
@@ -169,6 +169,48 @@ export const floorPlanSlice = createSlice({
     },
   },
 });
+
+// Selectors
+// Récupérer tous les plans
+export const selectAllFloorPlans = (state) => state.floorPlan.value.floorPlans;
+
+// Récupérer toutes les tables
+export const selectAllTables = (state) => state.floorPlan.value.tables;
+
+// Récupérer un plan spécifique par son ID
+export const selectFloorPlanById = (state, floorPlanId) => 
+  state.floorPlan.value.floorPlans.find(plan => plan._id === floorPlanId);
+
+// Récupérer le plan actuel
+export const selectCurrentFloorPlan = (state) => 
+  state.floorPlan.value.currentFloorPlan;
+
+// Récupérer les tables d'un plan spécifique
+export const selectTablesByFloorPlanId = (state, floorPlanId) => 
+  state.floorPlan.value.tables.filter(table => table.floorPlan === floorPlanId);
+
+// Récupérer le nombre de tables pour un plan spécifique
+export const selectTableCountByFloorPlanId = (state, floorPlanId) => 
+  state.floorPlan.value.tables.filter(table => table.floorPlan === floorPlanId).length;
+
+// Récupérer les plans avec le comptage de tables
+export const selectFloorPlansWithTableCount = (state) => {
+  const { floorPlans, tables } = state.floorPlan.value;
+  
+  return floorPlans.map(plan => {
+    const tableCount = tables.filter(table => table.floorPlan === plan._id).length;
+    return {
+      ...plan,
+      tableCount
+    };
+  });
+};
+
+// Récupérer l'état de chargement
+export const selectLoading = (state) => state.floorPlan.value.loading;
+
+// Récupérer l'état d'erreur
+export const selectError = (state) => state.floorPlan.value.error;
 
 export const {
   setFloorPlans,

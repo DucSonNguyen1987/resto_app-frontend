@@ -1,0 +1,238 @@
+/* src/styles/FloorPlanList.css */
+
+.floor-plan-list-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .floor-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  
+  .floor-plan-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .floor-plan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .floor-plan-card.active {
+    border-left: 4px solid #4caf50;
+  }
+  
+  .card-header {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #fafafa;
+  }
+  
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  
+  .status-badge.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status-badge.inactive {
+    background-color: #f5f5f5;
+    color: #757575;
+  }
+  
+  .status-badge.draft {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  /* Conteneur pour l'aperçu du plan */
+  .preview-container {
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 160px;
+  }
+  
+  /* Style de la description et des informations */
+  .card-body {
+    padding: 15px;
+    flex-grow: 1;
+  }
+  
+  .description {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #666;
+    height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .plan-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 15px;
+  }
+  
+  .info-item {
+    font-size: 0.85rem;
+    color: #555;
+  }
+  
+  .info-item strong {
+    color: #333;
+  }
+  
+  /* Footer avec les boutons d'action */
+  .card-footer {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #f0f0f0;
+    background-color: #fafafa;
+  }
+  
+  .btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .btn i {
+    margin-right: 5px;
+  }
+  
+  .btn-primary {
+    background-color: #1976d2;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #1565c0;
+  }
+  
+  .btn-secondary {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .btn-danger {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background-color: #d32f2f;
+  }
+  
+  .btn-outline-primary {
+    background-color: transparent;
+    color: #1976d2;
+    border: 1px solid #1976d2;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #1976d2;
+    color: white;
+  }
+  
+  /* État vide */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed #e0e0e0;
+  }
+  
+  .empty-state p {
+    margin-bottom: 20px;
+    color: #757575;
+  }
+  
+  /* États de chargement et d'erreur */
+  .loading, .error-message {
+    padding: 30px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  
+  .loading {
+    color: #2196f3;
+  }
+  
+  .error-message {
+    color: #f44336;
+    border: 1px solid #ffcdd2;
+  }
+  
+  /* Média queries pour la responsivité */
+  @media (max-width: 768px) {
+    .floor-plans-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .card-footer {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+  }

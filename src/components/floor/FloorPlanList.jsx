@@ -1,71 +1,201 @@
 // src/components/floor/FloorPlanList.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { Stage, Layer, Rect, Group, Text } from 'react-konva';
 import services from '../../services/serviceSwitch';
+import { 
+  selectFloorPlansWithTableCount, 
+  selectAllTables,
+  selectTablesByFloorPlanId,
+  selectLoading, 
+  selectError,
+  setFloorPlans,
+  setTables,
+  setLoading,
+  setError
+} from '../../reducers/floorPlanSlice';
+
+import '../../styles/FloorPlanList.css';
 
 // Composant pour la création d'un nouveau plan
 import NewFloorPlanModal from './NewFloorPlanModal';
 
+// Composant pour afficher une miniature du plan avec les tables
+const FloorPlanPreview = ({ plan, tables }) => {
+  // Calculer le facteur d'échelle pour la prévisualisation
+  const scaleFactor = Math.min(200 / plan.dimensions.width, 150 / plan.dimensions.height);
+  
+  // Rendu d'une table selon sa forme
+  const renderTable = (table) => {
+    // Déterminer la couleur en fonction du statut
+    const colorMap = {
+      'free': '#8bc34a',      // Vert pour table libre
+      'reserved': '#ffb74d',  // Orange pour table réservée
+      'occupied': '#ef5350'   // Rouge pour table occupée
+    };
+    
+    const color = colorMap[table.status] || '#8bc34a';
+    
+    return (
+      <Group
+        key={table._id}
+        x={table.position.x * scaleFactor}
+        y={table.position.y * scaleFactor}
+      >
+        <Rect
+          width={table.dimensions.width * scaleFactor}
+          height={(table.dimensions.height || table.dimensions.width) * scaleFactor}
+          fill={color}
+          opacity={0.8}
+          cornerRadius={table.shape === 'circle' ? table.dimensions.width * scaleFactor / 2 : 0}
+        />
+        <Text
+          text={table.number.toString()}
+          fontSize={8 * scaleFactor}
+          fill="#fff"
+          width={table.dimensions.width * scaleFactor}
+          height={(table.dimensions.height || table.dimensions.width) * scaleFactor}
+          align="center"
+          verticalAlign="middle"
+        />
+      </Group>
+    );
+  };
+  
+  return (
+    <Stage
+      width={plan.dimensions.width * scaleFactor}
+      height={plan.dimensions.height * scaleFactor}
+      style={{ border: '1px solid #ccc', background: '#f5f5f5' }}
+    >
+      <Layer>
+        {/* Fond du plan */}
+        <Rect
+          width={plan.dimensions.width * scaleFactor}
+          height={plan.dimensions.height * scaleFactor}
+          fill="#f9f9f9"
+        />
+        
+        {/* Obstacles (murs, piliers, etc.) */}
+        {plan.obstacles && plan.obstacles.map((obstacle, index) => (
+          <Rect
+            key={`obs-${index}`}
+            x={obstacle.position.x * scaleFactor}
+            y={obstacle.position.y * scaleFactor}
+            width={obstacle.dimensions.width * scaleFactor}
+            height={obstacle.dimensions.height * scaleFactor}
+            fill={obstacle.color || '#8d6e63'}
+            rotation={obstacle.rotation || 0}
+          />
+        ))}
+        
+        {/* Tables */}
+        {tables.map(table => renderTable(table))}
+      </Layer>
+    </Stage>
+  );
+};
+
 const FloorPlanList = () => {
-  const [floorPlans, setFloorPlans] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
+  const [tablesByPlan, setTablesByPlan] = useState({});
   
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Utiliser les sélecteurs pour obtenir les données du store
+  const floorPlansWithCount = useSelector(selectFloorPlansWithTableCount);
+  const allTables = useSelector(selectAllTables);
+  const isLoading = useSelector(selectLoading);
+  const error = useSelector(selectError);
   const user = useSelector(state => state.user.value);
   
   // Vérifier si l'utilisateur a les permissions pour créer/éditer des plans
   const canCreatePlan = ['ADMIN', 'OWNER', 'MANAGER'].includes(user.role);
   
-  // Charger les plans de salle
+  // Charger les plans de salle et leurs tables associées
   useEffect(() => {
-    const loadFloorPlans = async () => {
+    const loadFloorPlanData = async () => {
       try {
-        console.log('Début du chargement des plans de salle');
-        setIsLoading(true);
-        const response = await services.floorPlan.getAllFloorPlans();
+        console.log('[FloorPlanList] Début du chargement des plans de salle');
+        dispatch(setLoading(true));
         
-        // Vérifier l'état de l'authentification avant l'appel
-        console.log('Permissions utilisateur:', user.role);
-
-        if (response.success) {
-          // Gérer à la fois les structures de réponse possibles
-          const plans = response.data.floorPlans || response.data;
-          setFloorPlans(Array.isArray(plans) ? plans : []);
-          console.log('Plans chargés:', plans);
-        } else {
-          console.error('Erreur de réponse:', response.error);
-          setError(response.error || 'Erreur lors du chargement des plans de salle');
+        // Charger les plans
+        const plansResponse = await services.floorPlan.getAllFloorPlans();
+        
+        if (!plansResponse.success) {
+          throw new Error(plansResponse.error || 'Erreur lors du chargement des plans de salle');
         }
+        
+        // Extraire les plans
+        const plans = plansResponse.data.floorPlans || plansResponse.data;
+        const floorPlans = Array.isArray(plans) ? plans : [];
+        
+        // Mettre à jour Redux avec les plans
+        dispatch(setFloorPlans(floorPlans));
+        
+        // Charger les tables pour chaque plan
+        const tablesMap = {};
+        let allTablesData = [];
+        
+        for (const plan of floorPlans) {
+          try {
+            // Obtenir les détails du plan avec ses tables
+            const detailsResponse = await services.floorPlan.getFloorPlanDetails(plan._id);
+            
+            if (detailsResponse.success && detailsResponse.data.tables) {
+              tablesMap[plan._id] = detailsResponse.data.tables;
+              allTablesData = [...allTablesData, ...detailsResponse.data.tables];
+            }
+          } catch (error) {
+            console.error(`[FloorPlanList] Erreur lors du chargement des tables pour le plan ${plan._id}:`, error);
+          }
+        }
+        
+        // Mettre à jour Redux avec toutes les tables
+        dispatch(setTables(allTablesData));
+        
+        // Mettre à jour l'état local avec les tables par plan
+        setTablesByPlan(tablesMap);
+        
+        console.log('[FloorPlanList] Plans chargés:', floorPlans);
+        console.log('[FloorPlanList] Tables chargées:', allTablesData);
+        
       } catch (error) {
-        console.error('Erreur lors du chargement des plans:', error);
-        console.error('Détails de l\'erreur:', error.response?.data || error.message);
-        setError('Impossible de charger les plans de salle');
+        console.error('[FloorPlanList] Erreur lors du chargement des données:', error);
+        dispatch(setError('Impossible de charger les plans de salle et leurs tables'));
       } finally {
-        setIsLoading(false);
+        dispatch(setLoading(false));
       }
     };
     
-    loadFloorPlans();
-  }, [user.role]);
+    loadFloorPlanData();
+  }, [dispatch]);
   
   // Gérer la création d'un nouveau plan
   const handleCreatePlan = async (newPlanData) => {
     try {
+      dispatch(setLoading(true));
       const response = await services.floorPlan.createFloorPlan(newPlanData);
       
       if (response.success) {
-        // Ajouter le nouveau plan à la liste
-        setFloorPlans(prevPlans => [...prevPlans, response.data]);
+        // Recharger les données après création
+        const plansResponse = await services.floorPlan.getAllFloorPlans();
+        if (plansResponse.success) {
+          const plans = plansResponse.data.floorPlans || plansResponse.data;
+          dispatch(setFloorPlans(Array.isArray(plans) ? plans : []));
+        }
+        
         setShowNewPlanModal(false);
       } else {
-        setError(response.error || 'Erreur lors de la création du plan de salle');
+        dispatch(setError(response.error || 'Erreur lors de la création du plan de salle'));
       }
     } catch (error) {
-      console.error('Erreur lors de la création du plan:', error);
-      setError('Impossible de créer le plan de salle');
+      console.error('[FloorPlanList] Erreur lors de la création du plan:', error);
+      dispatch(setError('Impossible de créer le plan de salle'));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
   
@@ -73,33 +203,45 @@ const FloorPlanList = () => {
   const handleDeletePlan = async (floorPlanId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce plan de salle ?')) {
       try {
+        dispatch(setLoading(true));
         const response = await services.floorPlan.deleteFloorPlan(floorPlanId);
         
         if (response.success) {
-          // Retirer le plan supprimé de la liste
-          setFloorPlans(floorPlans.filter(plan => plan._id !== floorPlanId));
+          // Recharger les plans après suppression
+          const plansResponse = await services.floorPlan.getAllFloorPlans();
+          if (plansResponse.success) {
+            const plans = plansResponse.data.floorPlans || plansResponse.data;
+            dispatch(setFloorPlans(Array.isArray(plans) ? plans : []));
+            
+            // Supprimer les tables associées de l'état local
+            const newTablesMap = {...tablesByPlan};
+            delete newTablesMap[floorPlanId];
+            setTablesByPlan(newTablesMap);
+          }
         } else {
-          setError(response.error || 'Erreur lors de la suppression du plan de salle');
+          dispatch(setError(response.error || 'Erreur lors de la suppression du plan de salle'));
         }
       } catch (error) {
-        console.error('Erreur lors de la suppression du plan:', error);
-        setError('Impossible de supprimer le plan de salle');
+        console.error('[FloorPlanList] Erreur lors de la suppression du plan:', error);
+        dispatch(setError('Impossible de supprimer le plan de salle'));
+      } finally {
+        dispatch(setLoading(false));
       }
     }
   };
   
+  // Naviguer vers l'éditeur de plan
   const handleEditPlan = async (floorPlanId) => {
     try {
       console.log(`[FloorPlanList] Préparation de l'édition du plan: ${floorPlanId}`);
-      setIsLoading(true);
+      dispatch(setLoading(true));
       
       // Forcer le chargement des détails du plan avant de rediriger
       const response = await services.floorPlan.getFloorPlanDetails(floorPlanId);
       
       if (!response.success) {
         console.error(`[FloorPlanList] Erreur lors du chargement du plan ${floorPlanId}:`, response.error);
-        setError(response.error || 'Erreur lors du chargement des détails du plan');
-        setIsLoading(false);
+        dispatch(setError(response.error || 'Erreur lors du chargement des détails du plan'));
         return;
       }
       
@@ -108,33 +250,32 @@ const FloorPlanList = () => {
       // Vérifier que les données nécessaires sont présentes
       if (!response.data.floorPlan) {
         console.error(`[FloorPlanList] Les données du plan ${floorPlanId} sont incomplètes ou invalides`);
-        setError('Données du plan incomplètes');
-        setIsLoading(false);
+        dispatch(setError('Données du plan incomplètes'));
         return;
       }
       
       // Stocker temporairement les données dans le localStorage pour assurer leur disponibilité
-      // même en cas de problème avec Redux
       localStorage.setItem('currentFloorPlan', JSON.stringify(response.data.floorPlan));
       localStorage.setItem('currentFloorPlanTables', JSON.stringify(response.data.tables || []));
       
-      // Ajouter un petit délai pour s'assurer que Redux a le temps de traiter les données
-      setTimeout(() => {
-        // Maintenant que les détails sont chargés, naviguer vers l'éditeur
-        console.log(`[FloorPlanList] Redirection vers l'éditeur pour le plan: ${floorPlanId}`);
-        setIsLoading(false);
-        navigate(`/floor-plans/edit/${floorPlanId}`);
-      }, 300);
+      // Rediriger vers l'éditeur
+      navigate(`/floor-plans/edit/${floorPlanId}`);
     } catch (error) {
       console.error(`[FloorPlanList] Exception lors du préchargement du plan ${floorPlanId}:`, error);
-      setError('Impossible de charger les détails du plan pour l\'édition');
-      setIsLoading(false);
+      dispatch(setError('Impossible de charger les détails du plan pour l\'édition'));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
   
   // Naviguer vers la visualisation du plan
   const handleViewPlan = (floorPlanId) => {
     navigate(`/floor-plans/view/${floorPlanId}`);
+  };
+  
+  // Obtenir les tables pour un plan spécifique
+  const getTablesForPlan = (planId) => {
+    return tablesByPlan[planId] || [];
   };
   
   // Afficher un état de chargement
@@ -161,10 +302,9 @@ const FloorPlanList = () => {
         )}
       </div>
       
-      {/* Vérification améliorée avant d'utiliser .map() */}
-      {Array.isArray(floorPlans) && floorPlans.length > 0 ? (
+      {Array.isArray(floorPlansWithCount) && floorPlansWithCount.length > 0 ? (
         <div className="floor-plans-grid">
-          {floorPlans.map(plan => (
+          {floorPlansWithCount.map(plan => (
             <div
               key={plan._id}
               className={`floor-plan-card ${plan.status === 'active' ? 'active' : ''}`}
@@ -177,6 +317,14 @@ const FloorPlanList = () => {
                 </span>
               </div>
               
+              {/* Aperçu visuel du plan avec les tables */}
+              <div className="preview-container">
+                <FloorPlanPreview 
+                  plan={plan} 
+                  tables={getTablesForPlan(plan._id)} 
+                />
+              </div>
+              
               <div className="card-body">
                 <p className="description">{plan.description || 'Aucune description'}</p>
                 
@@ -186,7 +334,7 @@ const FloorPlanList = () => {
                   </div>
                   
                   <div className="info-item">
-                    <strong>Tables:</strong> {plan.tables || 0}
+                    <strong>Tables:</strong> {plan.tableCount || 0}
                   </div>
                   
                   <div className="info-item">
