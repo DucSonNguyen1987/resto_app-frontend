@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer, Rect, Line, Circle, Text, Group } from 'react-konva';
-import services from '../../services/serviceSwitch';
+import services from '../../../services/serviceSwitch';
 
 // Importer les styles
 import './FloorPlanViewer.css';
