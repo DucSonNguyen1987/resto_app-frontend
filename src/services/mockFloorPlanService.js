@@ -1,560 +1,729 @@
-// src/services/mockFloorPlanService.js
-import { jwtDecode } from 'jwt-decode';
+import store from '../store/store';
+import {
+  setFloorPlans,
+  addFloorPlan,
+  updateFloorPlan,
+  deleteFloorPlan,
+  setCurrentFloorPlan,
+  addTable,
+  updateTable,
+  deleteTable,
+  setLoading,
+  setError,
+} from '../reducers/floorPlanSlice';
 
-// Données mockées pour les plans de salle
-let mockFloorPlans = [
-  {
-    _id: 'fp1',
-    name: 'Salle Principale',
-    description: 'Salle principale du restaurant avec vue sur la terrasse',
-    dimensions: {
-      width: 800,
-      height: 600,
-      unit: 'pixels'
-    },
-    status: 'active',
-    createdBy: {
-      _id: '1',
-      username: 'admin'
-    },
-    createdAt: '2024-04-30T10:00:00.000Z',
-    updatedAt: '2024-05-01T14:00:00.000Z',
-    obstacles: [
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 700, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 550 },
-        dimensions: { width: 700, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 20, height: 520 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 750, y: 50 },
-        dimensions: { width: 20, height: 520 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'bar',
-        position: { x: 650, y: 300 },
-        dimensions: { width: 80, height: 200 },
-        rotation: 0,
-        color: '#5d4037',
-        label: 'Bar'
-      }
-    ]
-  },
-  {
-    _id: 'fp2',
-    name: 'Terrasse',
-    description: 'Espace extérieur avec 10 tables',
-    dimensions: {
-      width: 600,
-      height: 400,
-      unit: 'pixels'
-    },
-    status: 'active',
-    createdBy: {
-      _id: '1',
-      username: 'admin'
-    },
-    createdAt: '2024-04-28T09:00:00.000Z',
-    updatedAt: '2024-04-29T11:00:00.000Z',
-    obstacles: [
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 500, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 350 },
-        dimensions: { width: 500, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 20, height: 320 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 550, y: 50 },
-        dimensions: { width: 20, height: 320 },
-        rotation: 0,
-        color: '#8d6e63'
-      }
-    ]
-  },
-  {
-    _id: 'fp3',
-    name: 'Salon Privé',
-    description: 'Salle pour événements privés et groupes',
-    dimensions: {
-      width: 500,
-      height: 300,
-      unit: 'pixels'
-    },
-    status: 'inactive',
-    createdBy: {
-      _id: '2',
-      username: 'manager'
-    },
-    createdAt: '2024-05-01T15:00:00.000Z',
-    updatedAt: '2024-05-02T10:00:00.000Z',
-    obstacles: [
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 400, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 250 },
-        dimensions: { width: 400, height: 20 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 50, y: 50 },
-        dimensions: { width: 20, height: 220 },
-        rotation: 0,
-        color: '#8d6e63'
-      },
-      {
-        type: 'wall',
-        position: { x: 450, y: 50 },
-        dimensions: { width: 20, height: 220 },
-        rotation: 0,
-        color: '#8d6e63'
-      }
-    ]
-  }
-];
-
-// Données mockées pour les tables
-let mockTables = [
-  // Tables pour la salle principale (fp1)
-  {
-    _id: 't1',
-    number: 1,
-    floorPlan: 'fp1',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 120, y: 120 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't2',
-    number: 2,
-    floorPlan: 'fp1',
-    capacity: 2,
-    shape: 'circle',
-    position: { x: 220, y: 120 },
-    dimensions: { width: 50, height: 50 },
-    status: 'reserved'
-  },
-  {
-    _id: 't3',
-    number: 3,
-    floorPlan: 'fp1',
-    capacity: 6,
-    shape: 'rectangle',
-    position: { x: 350, y: 120 },
-    dimensions: { width: 120, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't4',
-    number: 4,
-    floorPlan: 'fp1',
-    capacity: 8,
-    shape: 'rectangle',
-    position: { x: 150, y: 250 },
-    dimensions: { width: 150, height: 70 },
-    status: 'occupied'
-  },
-  {
-    _id: 't5',
-    number: 5,
-    floorPlan: 'fp1',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 350, y: 250 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't6',
-    number: 6,
-    floorPlan: 'fp1',
-    capacity: 2,
-    shape: 'square',
-    position: { x: 150, y: 400 },
-    dimensions: { width: 50, height: 50 },
-    status: 'free'
-  },
-  {
-    _id: 't7',
-    number: 7,
-    floorPlan: 'fp1',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 250, y: 400 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't8',
-    number: 8,
-    floorPlan: 'fp1',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 350, y: 400 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  // Tables pour la terrasse (fp2)
-  {
-    _id: 't9',
-    number: 1,
-    floorPlan: 'fp2',
-    capacity: 2,
-    shape: 'circle',
-    position: { x: 120, y: 100 },
-    dimensions: { width: 50, height: 50 },
-    status: 'free'
-  },
-  {
-    _id: 't10',
-    number: 2,
-    floorPlan: 'fp2',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 220, y: 100 },
-    dimensions: { width: 60, height: 60 },
-    status: 'reserved'
-  },
-  {
-    _id: 't11',
-    number: 3,
-    floorPlan: 'fp2',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 320, y: 100 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't12',
-    number: 4,
-    floorPlan: 'fp2',
-    capacity: 6,
-    shape: 'rectangle',
-    position: { x: 420, y: 100 },
-    dimensions: { width: 90, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't13',
-    number: 5,
-    floorPlan: 'fp2',
-    capacity: 2,
-    shape: 'circle',
-    position: { x: 120, y: 200 },
-    dimensions: { width: 50, height: 50 },
-    status: 'free'
-  },
-  {
-    _id: 't14',
-    number: 6,
-    floorPlan: 'fp2',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 220, y: 200 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't15',
-    number: 7,
-    floorPlan: 'fp2',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 320, y: 200 },
-    dimensions: { width: 60, height: 60 },
-    status: 'occupied'
-  },
-  {
-    _id: 't16',
-    number: 8,
-    floorPlan: 'fp2',
-    capacity: 4,
-    shape: 'circle',
-    position: { x: 420, y: 200 },
-    dimensions: { width: 60, height: 60 },
-    status: 'free'
-  },
-  {
-    _id: 't17',
-    number: 9,
-    floorPlan: 'fp2',
-    capacity: 2,
-    shape: 'circle',
-    position: { x: 170, y: 300 },
-    dimensions: { width: 50, height: 50 },
-    status: 'free'
-  },
-  {
-    _id: 't18',
-    number: 10,
-    floorPlan: 'fp2',
-    capacity: 2,
-    shape: 'circle',
-    position: { x: 370, y: 300 },
-    dimensions: { width: 50, height: 50 },
-    status: 'free'
-  },
-  // Tables pour le salon privé (fp3)
-  {
-    _id: 't19',
-    number: 1,
-    floorPlan: 'fp3',
-    capacity: 8,
-    shape: 'rectangle',
-    position: { x: 250, y: 150 },
-    dimensions: { width: 200, height: 80 },
-    status: 'free'
-  }
-];
-
-// Fonction pour obtenir l'ID de l'utilisateur à partir du token JWT
-const getUserIdFromToken = () => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) return null;
-  
-  try {
-    const decoded = jwtDecode(token);
-    return decoded.sub;
-  } catch (error) {
-    console.error('Token invalide:', error);
-    return null;
-  }
-};
-
-// Générer un ID unique
-const generateId = () => {
-  return 'id_' + Math.random().toString(36).substring(2, 9);
-};
+// URL de base pour les appels API (à modifier selon votre configuration)
+const API_BASE_URL = '/api';
 
 const mockFloorPlanService = {
   // Récupérer tous les plans de salle
   getAllFloorPlans: async () => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    return {
-      success: true,
-      data: mockFloorPlans
-    };
-  },
-  
-  // Récupérer les détails d'un plan de salle avec ses tables
-  getFloorPlanDetails: async (floorPlanId) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const floorPlan = mockFloorPlans.find(plan => plan._id === floorPlanId);
-    
-    if (!floorPlan) {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const state = store.getState().floorPlan.value;
+      
+      store.dispatch(setLoading(false));
+      return {
+        success: true,
+        data: { floorPlans: state.floorPlans },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la récupération des plans de salle'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Plan de salle non trouvé'
+        error: 'Erreur lors de la récupération des plans de salle',
       };
     }
-    
-    const tables = mockTables.filter(table => table.floorPlan === floorPlanId);
-    
-    return {
-      success: true,
-      data: {
-        floorPlan,
-        tables
+  },
+  
+  // Récupérer un plan de salle par son ID
+  getFloorPlanDetails: async (floorPlanId) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      const floorPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      
+      if (!floorPlan) {
+        store.dispatch(setError('Plan de salle non trouvé'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Plan de salle non trouvé',
+        };
       }
-    };
+      
+      // Récupérer les tables associées à ce plan
+      const tables = state.tables.filter(table => table.floorPlan === floorPlanId);
+      
+      store.dispatch(setCurrentFloorPlan(floorPlan));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          floorPlan,
+          tables,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la récupération du plan de salle'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la récupération du plan de salle',
+      };
+    }
   },
   
   // Créer un nouveau plan de salle
   createFloorPlan: async (floorPlanData) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    const userId = getUserIdFromToken();
-    if (!userId) {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Générer un ID unique
+      const newId = 'fp' + Date.now();
+      
+      const newFloorPlan = {
+        _id: newId,
+        ...floorPlanData,
+        createdBy: store.getState().user.value.id,
+        lastModifiedBy: store.getState().user.value.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(addFloorPlan(newFloorPlan));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: newFloorPlan,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la création du plan de salle'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Non authentifié'
+        error: 'Erreur lors de la création du plan de salle',
       };
     }
-    
-    // Créer un nouvel ID pour le plan
-    const newId = generateId();
-    
-    // Créer le nouveau plan
-    const newFloorPlan = {
-      _id: newId,
-      ...floorPlanData,
-      createdBy: {
-        _id: userId,
-        username: 'user_' + userId // Simuler un nom d'utilisateur
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      obstacles: floorPlanData.obstacles || []
-    };
-    
-    // Ajouter le plan à la liste
-    mockFloorPlans.push(newFloorPlan);
-    
-    return {
-      success: true,
-      data: newFloorPlan
-    };
   },
   
   // Mettre à jour un plan de salle existant
   updateFloorPlan: async (floorPlanId, floorPlanData) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const floorPlanIndex = mockFloorPlans.findIndex(plan => plan._id === floorPlanId);
-    
-    if (floorPlanIndex === -1) {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      const state = store.getState().floorPlan.value;
+      const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      
+      if (!existingPlan) {
+        store.dispatch(setError('Plan de salle non trouvé'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Plan de salle non trouvé',
+        };
+      }
+      
+      const updatedPlan = {
+        ...existingPlan,
+        ...floorPlanData,
+        _id: floorPlanId, // Assurer que l'ID reste le même
+        lastModifiedBy: store.getState().user.value.id,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateFloorPlan(updatedPlan));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: updatedPlan,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour du plan de salle'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Plan de salle non trouvé'
+        error: 'Erreur lors de la mise à jour du plan de salle',
       };
     }
-    
-    // Mettre à jour le plan
-    const updatedFloorPlan = {
-      ...mockFloorPlans[floorPlanIndex],
-      ...floorPlanData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    mockFloorPlans[floorPlanIndex] = updatedFloorPlan;
-    
-    return {
-      success: true,
-      data: updatedFloorPlan
-    };
   },
   
   // Supprimer un plan de salle
   deleteFloorPlan: async (floorPlanId) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const floorPlanIndex = mockFloorPlans.findIndex(plan => plan._id === floorPlanId);
-    
-    if (floorPlanIndex === -1) {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      const state = store.getState().floorPlan.value;
+      const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      
+      if (!existingPlan) {
+        store.dispatch(setError('Plan de salle non trouvé'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Plan de salle non trouvé',
+        };
+      }
+      
+      store.dispatch(deleteFloorPlan(floorPlanId));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        message: 'Plan de salle supprimé avec succès',
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la suppression du plan de salle'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Plan de salle non trouvé'
+        error: 'Erreur lors de la suppression du plan de salle',
       };
     }
-    
-    // Supprimer le plan
-    mockFloorPlans.splice(floorPlanIndex, 1);
-    
-    // Supprimer les tables associées
-    mockTables = mockTables.filter(table => table.floorPlan !== floorPlanId);
-    
-    return {
-      success: true,
-      message: 'Plan de salle supprimé avec succès'
-    };
+  },
+  
+  // Modifier le statut d'un plan de salle
+  updateFloorPlanStatus: async (floorPlanId, status) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      
+      if (!existingPlan) {
+        store.dispatch(setError('Plan de salle non trouvé'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Plan de salle non trouvé',
+        };
+      }
+      
+      // Vérifier que le statut est valide
+      if (!['active', 'inactive', 'draft'].includes(status)) {
+        store.dispatch(setError('Statut invalide'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Statut invalide. Les valeurs acceptées sont: active, inactive et draft',
+        };
+      }
+      
+      const updatedPlan = {
+        ...existingPlan,
+        status,
+        lastModifiedBy: store.getState().user.value.id,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateFloorPlan(updatedPlan));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: updatedPlan,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour du statut du plan'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour du statut du plan',
+      };
+    }
   },
   
   // Mettre à jour les obstacles d'un plan de salle
-  updateObstacles: async (floorPlanId, obstacles) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const floorPlanIndex = mockFloorPlans.findIndex(plan => plan._id === floorPlanId);
-    
-    if (floorPlanIndex === -1) {
+  updateFloorPlanObstacles: async (floorPlanId, obstacles) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const state = store.getState().floorPlan.value;
+      const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      
+      if (!existingPlan) {
+        store.dispatch(setError('Plan de salle non trouvé'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Plan de salle non trouvé',
+        };
+      }
+      
+      const updatedPlan = {
+        ...existingPlan,
+        obstacles,
+        lastModifiedBy: store.getState().user.value.id,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateFloorPlan(updatedPlan));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: updatedPlan,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour des obstacles'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Plan de salle non trouvé'
+        error: 'Erreur lors de la mise à jour des obstacles',
       };
     }
-    
-    // Mettre à jour les obstacles
-    mockFloorPlans[floorPlanIndex].obstacles = obstacles;
-    mockFloorPlans[floorPlanIndex].updatedAt = new Date().toISOString();
-    
-    return {
-      success: true,
-      data: mockFloorPlans[floorPlanIndex]
-    };
   },
   
-  // Changer le statut d'un plan de salle
-  changeStatus: async (floorPlanId, status) => {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    const floorPlanIndex = mockFloorPlans.findIndex(plan => plan._id === floorPlanId);
-    
-    if (floorPlanIndex === -1) {
+  // Services pour les tables
+  
+  // Récupérer toutes les tables (avec filtres optionnels)
+  getAllTables: async (filter = {}) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      let tables = [...state.tables];
+      
+      // Appliquer les filtres
+      if (filter.floorPlan) {
+        tables = tables.filter(table => table.floorPlan === filter.floorPlan);
+      }
+      
+      if (filter.status) {
+        tables = tables.filter(table => table.status === filter.status);
+      }
+      
+      if (filter.minCapacity) {
+        tables = tables.filter(table => table.capacity >= filter.minCapacity);
+      }
+      
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: tables,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la récupération des tables'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Plan de salle non trouvé'
+        error: 'Erreur lors de la récupération des tables',
       };
     }
-    
-    // Valider le statut
-    if (!['active', 'inactive', 'draft'].includes(status)) {
+  },
+  
+  // Récupérer une table spécifique
+  getTableById: async (tableId) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const state = store.getState().floorPlan.value;
+      const table = state.tables.find(table => table._id === tableId);
+      
+      if (!table) {
+        store.dispatch(setError('Table non trouvée'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Table non trouvée',
+        };
+      }
+      
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: table,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la récupération de la table'));
+      store.dispatch(setLoading(false));
       return {
         success: false,
-        error: 'Statut invalide'
+        error: 'Erreur lors de la récupération de la table',
       };
     }
-    
-    // Mettre à jour le statut
-    mockFloorPlans[floorPlanIndex].status = status;
-    mockFloorPlans[floorPlanIndex].updatedAt = new Date().toISOString();
-    
-    return {
-      success: true,
-      data: mockFloorPlans[floorPlanIndex]
-    };
-  }
+  },
+  
+  // Créer une nouvelle table
+  createTable: async (tableData) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Vérifier si le numéro de table est unique pour ce plan de salle
+      const state = store.getState().floorPlan.value;
+      const existingTable = state.tables.find(
+        table => table.number === tableData.number && table.floorPlan === tableData.floorPlan
+      );
+      
+      if (existingTable) {
+        store.dispatch(setError(`La table n°${tableData.number} existe déjà sur ce plan`));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: `La table n°${tableData.number} existe déjà sur ce plan`,
+        };
+      }
+      
+      // Générer un ID unique
+      const newId = 't' + Date.now();
+      
+      const newTable = {
+        _id: newId,
+        ...tableData,
+        lastModifiedBy: store.getState().user.value.id,
+        lastModifiedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(addTable(newTable));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          table: newTable,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la création de la table'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la création de la table',
+      };
+    }
+  },
+  
+  // Mettre à jour une table existante
+  updateTable: async (tableId, tableData) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      const existingTable = state.tables.find(table => table._id === tableId);
+      
+      if (!existingTable) {
+        store.dispatch(setError('Table non trouvée'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Table non trouvée',
+        };
+      }
+      
+      // Vérifier si le nouveau numéro de table est unique (si changé)
+      if (tableData.number && tableData.number !== existingTable.number) {
+        const floorPlanId = tableData.floorPlan || existingTable.floorPlan;
+        const duplicateTable = state.tables.find(
+          table => table.number === tableData.number && 
+                  table.floorPlan === floorPlanId && 
+                  table._id !== tableId
+        );
+        
+        if (duplicateTable) {
+          store.dispatch(setError(`La table n°${tableData.number} existe déjà sur ce plan`));
+          store.dispatch(setLoading(false));
+          return {
+            success: false,
+            error: `La table n°${tableData.number} existe déjà sur ce plan`,
+          };
+        }
+      }
+      
+      const updatedTable = {
+        ...existingTable,
+        ...tableData,
+        _id: tableId, // Assurer que l'ID reste le même
+        lastModifiedBy: store.getState().user.value.id,
+        lastModifiedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateTable(updatedTable));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          table: updatedTable,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour de la table'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour de la table',
+      };
+    }
+  },
+  
+  // Supprimer une table
+  deleteTable: async (tableId) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      const existingTable = state.tables.find(table => table._id === tableId);
+      
+      if (!existingTable) {
+        store.dispatch(setError('Table non trouvée'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Table non trouvée',
+        };
+      }
+      
+      store.dispatch(deleteTable(tableId));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        message: 'Table supprimée avec succès',
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la suppression de la table'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la suppression de la table',
+      };
+    }
+  },
+  
+  // Mettre à jour la position d'une table
+  updateTablePosition: async (tableId, position, rotation) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const state = store.getState().floorPlan.value;
+      const existingTable = state.tables.find(table => table._id === tableId);
+      
+      if (!existingTable) {
+        store.dispatch(setError('Table non trouvée'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Table non trouvée',
+        };
+      }
+      
+      const updatedTable = {
+        ...existingTable,
+        position,
+        rotation: rotation !== undefined ? rotation : existingTable.rotation,
+        lastModifiedBy: store.getState().user.value.id,
+        lastModifiedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateTable(updatedTable));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          table: updatedTable,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour de la position de la table'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour de la position de la table',
+      };
+    }
+  },
+  
+  // Mettre à jour le statut d'une table
+  updateTableStatus: async (tableId, status) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const state = store.getState().floorPlan.value;
+      const existingTable = state.tables.find(table => table._id === tableId);
+      
+      if (!existingTable) {
+        store.dispatch(setError('Table non trouvée'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Table non trouvée',
+        };
+      }
+      
+      // Vérifier que le statut est valide
+      if (!['free', 'reserved', 'occupied'].includes(status)) {
+        store.dispatch(setError('Statut invalide'));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: 'Statut invalide. Les valeurs acceptées sont: free, reserved ou occupied',
+        };
+      }
+      
+      const updatedTable = {
+        ...existingTable,
+        status,
+        lastModifiedBy: store.getState().user.value.id,
+        lastModifiedAt: new Date().toISOString(),
+      };
+      
+      store.dispatch(updateTable(updatedTable));
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          table: updatedTable,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la mise à jour du statut de la table'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la mise à jour du statut de la table',
+      };
+    }
+  },
+  
+  // Créer plusieurs tables en une seule fois
+  createTablesBatch: async (tables, floorPlanId) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const state = store.getState().floorPlan.value;
+      
+      // Vérifier si les numéros de table sont uniques
+      const existingNumbers = state.tables
+        .filter(table => table.floorPlan === floorPlanId)
+        .map(table => table.number);
+      
+      const newNumbers = tables.map(table => table.number);
+      const duplicateNumbers = newNumbers.filter(
+        (num, idx) => newNumbers.indexOf(num) !== idx || existingNumbers.includes(num)
+      );
+      
+      if (duplicateNumbers.length > 0) {
+        store.dispatch(setError(`Numéros de table en conflit: ${duplicateNumbers.join(', ')}`));
+        store.dispatch(setLoading(false));
+        return {
+          success: false,
+          error: `Numéros de table en conflit: ${duplicateNumbers.join(', ')}`,
+        };
+      }
+      
+      // Créer les tables avec des IDs uniques
+      const createdTables = tables.map(table => ({
+        ...table,
+        _id: 't' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        floorPlan: floorPlanId,
+        lastModifiedBy: store.getState().user.value.id,
+        lastModifiedAt: new Date().toISOString(),
+      }));
+      
+      // Ajouter chaque table au store
+      createdTables.forEach(table => {
+        store.dispatch(addTable(table));
+      });
+      
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: createdTables,
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la création des tables'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la création des tables',
+      };
+    }
+  },
+  
+  // Récupérer toutes les tables d'un plan de salle
+  getTablesByFloorPlan: async (floorPlanId) => {
+    try {
+      store.dispatch(setLoading(true));
+      
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const state = store.getState().floorPlan.value;
+      const tables = state.tables.filter(table => table.floorPlan === floorPlanId);
+      
+      store.dispatch(setLoading(false));
+      
+      return {
+        success: true,
+        data: {
+          tables,
+        },
+      };
+    } catch (error) {
+      store.dispatch(setError('Erreur lors de la récupération des tables'));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        error: 'Erreur lors de la récupération des tables',
+      };
+    }
+  },
 };
 
 export default mockFloorPlanService;

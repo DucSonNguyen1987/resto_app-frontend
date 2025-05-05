@@ -4,6 +4,8 @@ import storage from 'redux-persist/lib/storage';
 
 // Import only the userReducer since we're centralizing state
 import userReducer from '../reducers/userSlice';
+import floorPlanReducer from '../reducers/floorPlanSlice';
+
 
 // Configuration de la persistance pour les données USER
 const userPersistConfig = {
@@ -12,13 +14,23 @@ const userPersistConfig = {
     whitelist: ['value'] // Persister l'état complet de l'utilisateur
 };
 
+// Configuration de la persistance pour les plans de salle
+const floorPlanPersistConfig = {
+    key: 'floorPlan',
+    storage,
+    whitelist: ['value'] // Persister l'état complet des plans de salle
+};
+
 // Create persisted reducer
 const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
+const persistedFloorPlanReducer = persistReducer(floorPlanPersistConfig, floorPlanReducer);
 
 // Configure the Redux store
 export const store = configureStore({
     reducer: {
-        user: persistedUserReducer
+        user: persistedUserReducer,
+        floorPlan: persistedFloorPlanReducer
+
     },
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({

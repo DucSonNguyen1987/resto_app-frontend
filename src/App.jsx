@@ -21,6 +21,8 @@ import AccountSettings from './components/account/AccountSettings';
 import FloorPlanList from './components/floor/FloorPlanList';
 import FloorPlanViewer from './components/floor/FloorPlanViewer';
 import FloorPlanEditor from './features/floor_editor/FloorPlanEditor';
+// Importer le nouveau composant de création de plan
+import CreateFloorPlan from './features/floor_plans/CreateFloorPlan';
 
 // Dashboard
 import Dashboard from './components/dashboard/Dashboard';
@@ -89,6 +91,15 @@ function App() {
           <PrivateRoute>
             <RequiresTwoFactorCheck>
               <FloorPlanList />
+            </RequiresTwoFactorCheck>
+          </PrivateRoute>
+        } />
+        
+        {/* Nouvelle route pour créer un plan de salle */}
+        <Route path="/create-floor-plan" element={
+          <PrivateRoute>
+            <RequiresTwoFactorCheck>
+              <CreateFloorPlan />
             </RequiresTwoFactorCheck>
           </PrivateRoute>
         } />
