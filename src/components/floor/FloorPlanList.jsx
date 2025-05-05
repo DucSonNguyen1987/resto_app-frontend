@@ -31,9 +31,10 @@ const FloorPlanList = () => {
         console.log('Permissions utilisateur:', user.role);
 
         if (response.success) {
-          // Correction ici: accéder à response.data.floorPlans au lieu de response.data
-          setFloorPlans(response.data.floorPlans);
-          console.log('Plans chargés:', response.data.floorPlans);
+          // Gérer à la fois les structures de réponse possibles
+          const plans = response.data.floorPlans || response.data;
+          setFloorPlans(Array.isArray(plans) ? plans : []);
+          console.log('Plans chargés:', plans);
         } else {
           console.error('Erreur de réponse:', response.error);
           setError(response.error || 'Erreur lors du chargement des plans de salle');
@@ -48,7 +49,7 @@ const FloorPlanList = () => {
     };
     
     loadFloorPlans();
-  }, []);
+  }, [user.role]);
   
   // Gérer la création d'un nouveau plan
   const handleCreatePlan = async (newPlanData) => {
@@ -57,7 +58,7 @@ const FloorPlanList = () => {
       
       if (response.success) {
         // Ajouter le nouveau plan à la liste
-        setFloorPlans([...floorPlans, response.data]);
+        setFloorPlans(prevPlans => [...prevPlans, response.data]);
         setShowNewPlanModal(false);
       } else {
         setError(response.error || 'Erreur lors de la création du plan de salle');
@@ -142,7 +143,7 @@ const FloorPlanList = () => {
                 
                 <div className="plan-info">
                   <div className="info-item">
-                    <strong>Dimensions:</strong> {plan.dimensions.width} x {plan.dimensions.height} {plan.dimensions.unit}
+                    <strong>Dimensions:</strong> {plan.dimensions?.width || 0} x {plan.dimensions?.height || 0} {plan.dimensions?.unit || 'px'}
                   </div>
                   
                   <div className="info-item">
