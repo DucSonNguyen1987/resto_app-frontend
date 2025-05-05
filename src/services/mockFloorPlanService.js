@@ -1,3 +1,4 @@
+// src/services/mockFloorPlanService.js
 import { getStore } from '../store/store';
 import {
   setFloorPlans,
@@ -5,6 +6,7 @@ import {
   updateFloorPlan,
   deleteFloorPlan,
   setCurrentFloorPlan,
+  setTables,  // Assurez-vous que cette action existe dans votre slice
   addTable,
   updateTable,
   deleteTable,
@@ -12,8 +14,101 @@ import {
   setError,
 } from '../reducers/floorPlanSlice';
 
-// URL de base pour les appels API (à modifier selon votre configuration)
-const API_BASE_URL = '/api';
+// Données mock par défaut
+const defaultFloorPlans = [
+  {
+    _id: 'fp1',
+    name: 'Salle principale',
+    description: 'Salle principale du restaurant',
+    dimensions: { width: 800, height: 600, unit: 'pixels' },
+    status: 'active',
+    obstacles: [
+      {
+        type: 'wall',
+        position: { x: 50, y: 100 },
+        dimensions: { width: 200, height: 20 },
+        rotation: 0
+      }
+    ],
+    createdAt: '2023-01-01T00:00:00.000Z',
+    updatedAt: '2023-01-01T00:00:00.000Z'
+  },
+  {
+    _id: 'fp2',
+    name: 'Terrasse',
+    description: 'Terrasse extérieure',
+    dimensions: { width: 600, height: 400, unit: 'pixels' },
+    status: 'active',
+    obstacles: [],
+    createdAt: '2023-01-02T00:00:00.000Z',
+    updatedAt: '2023-01-02T00:00:00.000Z'
+  }
+];
+
+const defaultTables = [
+  {
+    _id: 't1',
+    number: 1,
+    floorPlan: 'fp1',
+    capacity: 4,
+    shape: 'circle',
+    position: { x: 120, y: 120 },
+    dimensions: { width: 60, height: 60 },
+    status: 'free'
+  },
+  {
+    _id: 't2',
+    number: 2,
+    floorPlan: 'fp1',
+    capacity: 2,
+    shape: 'circle',
+    position: { x: 220, y: 120 },
+    dimensions: { width: 50, height: 50 },
+    status: 'reserved'
+  },
+  {
+    _id: 't3',
+    number: 3,
+    floorPlan: 'fp1',
+    capacity: 6,
+    shape: 'rectangle',
+    position: { x: 350, y: 120 },
+    dimensions: { width: 120, height: 60 },
+    status: 'free'
+  },
+  {
+    _id: 't9',
+    number: 1,
+    floorPlan: 'fp2',
+    capacity: 2,
+    shape: 'circle',
+    position: { x: 120, y: 100 },
+    dimensions: { width: 50, height: 50 },
+    status: 'free'
+  },
+  {
+    _id: 't10',
+    number: 2,
+    floorPlan: 'fp2',
+    capacity: 4,
+    shape: 'circle',
+    position: { x: 220, y: 100 },
+    dimensions: { width: 60, height: 60 },
+    status: 'reserved'
+  }
+];
+
+// Fonction utilitaire pour initialiser le store si nécessaire
+const initializeStoreIfEmpty = () => {
+  const state = getStore().getState().floorPlan.value;
+  if (state.floorPlans.length === 0) {
+    console.log('[mockFloorPlanService] Store vide, initialisation des données par défaut');
+    getStore().dispatch(setFloorPlans(defaultFloorPlans));
+    getStore().dispatch(setTables(defaultTables));
+    return true;
+  }
+  return false;
+};
 
 const mockFloorPlanService = {
   // Récupérer tous les plans de salle
@@ -24,14 +119,19 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const state = getStore().getState().floorPlan.value;
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
+      // Récupérer l'état mis à jour
+      const updatedState = getStore().getState().floorPlan.value;
       
       getStore().dispatch(setLoading(false));
       return {
         success: true,
-        data: { floorPlans: state.floorPlans },
+        data: { floorPlans: updatedState.floorPlans },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la récupération des plans:', error);
       getStore().dispatch(setError('Erreur lors de la récupération des plans de salle'));
       getStore().dispatch(setLoading(false));
       return {
@@ -45,14 +145,20 @@ const mockFloorPlanService = {
   getFloorPlanDetails: async (floorPlanId) => {
     try {
       getStore().dispatch(setLoading(true));
+      console.log(`[mockFloorPlanService] Chargement des détails du plan: ${floorPlanId}`);
       
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      const state = getStore().getState().floorPlan.value;
-      const floorPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
+      // Récupérer l'état mis à jour
+      const updatedState = getStore().getState().floorPlan.value;
+      const floorPlan = updatedState.floorPlans.find(plan => plan._id === floorPlanId);
       
       if (!floorPlan) {
+        console.error(`[mockFloorPlanService] Plan non trouvé avec ID: ${floorPlanId}`);
         getStore().dispatch(setError('Plan de salle non trouvé'));
         getStore().dispatch(setLoading(false));
         return {
@@ -62,8 +168,10 @@ const mockFloorPlanService = {
       }
       
       // Récupérer les tables associées à ce plan
-      const tables = state.tables.filter(table => table.floorPlan === floorPlanId);
+      const tables = updatedState.tables.filter(table => table.floorPlan === floorPlanId);
+      console.log(`[mockFloorPlanService] Plan trouvé: ${floorPlan.name}, avec ${tables.length} tables`);
       
+      // Mettre à jour le plan courant
       getStore().dispatch(setCurrentFloorPlan(floorPlan));
       getStore().dispatch(setLoading(false));
       
@@ -75,6 +183,7 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur:', error);
       getStore().dispatch(setError('Erreur lors de la récupération du plan de salle'));
       getStore().dispatch(setLoading(false));
       return {
@@ -92,6 +201,9 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 800));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       // Générer un ID unique
       const newId = 'fp' + Date.now();
       
@@ -104,6 +216,7 @@ const mockFloorPlanService = {
         updatedAt: new Date().toISOString(),
       };
       
+      // Utilisation de addFloorPlan
       getStore().dispatch(addFloorPlan(newFloorPlan));
       getStore().dispatch(setLoading(false));
       
@@ -112,6 +225,7 @@ const mockFloorPlanService = {
         data: newFloorPlan,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la création du plan:', error);
       getStore().dispatch(setError('Erreur lors de la création du plan de salle'));
       getStore().dispatch(setLoading(false));
       return {
@@ -129,10 +243,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 600));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
       
       if (!existingPlan) {
+        console.error(`[mockFloorPlanService] Plan non trouvé lors de la mise à jour: ${floorPlanId}`);
         getStore().dispatch(setError('Plan de salle non trouvé'));
         getStore().dispatch(setLoading(false));
         return {
@@ -149,6 +267,7 @@ const mockFloorPlanService = {
         updatedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateFloorPlan
       getStore().dispatch(updateFloorPlan(updatedPlan));
       getStore().dispatch(setLoading(false));
       
@@ -157,6 +276,7 @@ const mockFloorPlanService = {
         data: updatedPlan,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour du plan:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour du plan de salle'));
       getStore().dispatch(setLoading(false));
       return {
@@ -174,10 +294,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 400));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
       
       if (!existingPlan) {
+        console.error(`[mockFloorPlanService] Plan non trouvé lors de la suppression: ${floorPlanId}`);
         getStore().dispatch(setError('Plan de salle non trouvé'));
         getStore().dispatch(setLoading(false));
         return {
@@ -186,6 +310,7 @@ const mockFloorPlanService = {
         };
       }
       
+      // Utilisation de deleteFloorPlan
       getStore().dispatch(deleteFloorPlan(floorPlanId));
       getStore().dispatch(setLoading(false));
       
@@ -194,6 +319,7 @@ const mockFloorPlanService = {
         message: 'Plan de salle supprimé avec succès',
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la suppression du plan:', error);
       getStore().dispatch(setError('Erreur lors de la suppression du plan de salle'));
       getStore().dispatch(setLoading(false));
       return {
@@ -211,10 +337,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
       
       if (!existingPlan) {
+        console.error(`[mockFloorPlanService] Plan non trouvé lors de la mise à jour du statut: ${floorPlanId}`);
         getStore().dispatch(setError('Plan de salle non trouvé'));
         getStore().dispatch(setLoading(false));
         return {
@@ -240,6 +370,7 @@ const mockFloorPlanService = {
         updatedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateFloorPlan
       getStore().dispatch(updateFloorPlan(updatedPlan));
       getStore().dispatch(setLoading(false));
       
@@ -248,6 +379,7 @@ const mockFloorPlanService = {
         data: updatedPlan,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour du statut:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour du statut du plan'));
       getStore().dispatch(setLoading(false));
       return {
@@ -265,10 +397,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingPlan = state.floorPlans.find(plan => plan._id === floorPlanId);
       
       if (!existingPlan) {
+        console.error(`[mockFloorPlanService] Plan non trouvé lors de la mise à jour des obstacles: ${floorPlanId}`);
         getStore().dispatch(setError('Plan de salle non trouvé'));
         getStore().dispatch(setLoading(false));
         return {
@@ -284,6 +420,7 @@ const mockFloorPlanService = {
         updatedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateFloorPlan
       getStore().dispatch(updateFloorPlan(updatedPlan));
       getStore().dispatch(setLoading(false));
       
@@ -292,6 +429,7 @@ const mockFloorPlanService = {
         data: updatedPlan,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour des obstacles:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour des obstacles'));
       getStore().dispatch(setLoading(false));
       return {
@@ -310,6 +448,9 @@ const mockFloorPlanService = {
       
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
       
       const state = getStore().getState().floorPlan.value;
       let tables = [...state.tables];
@@ -334,6 +475,7 @@ const mockFloorPlanService = {
         data: tables,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la récupération des tables:', error);
       getStore().dispatch(setError('Erreur lors de la récupération des tables'));
       getStore().dispatch(setLoading(false));
       return {
@@ -351,10 +493,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 200));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const table = state.tables.find(table => table._id === tableId);
       
       if (!table) {
+        console.error(`[mockFloorPlanService] Table non trouvée: ${tableId}`);
         getStore().dispatch(setError('Table non trouvée'));
         getStore().dispatch(setLoading(false));
         return {
@@ -370,6 +516,7 @@ const mockFloorPlanService = {
         data: table,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la récupération de la table:', error);
       getStore().dispatch(setError('Erreur lors de la récupération de la table'));
       getStore().dispatch(setLoading(false));
       return {
@@ -387,6 +534,9 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       // Vérifier si le numéro de table est unique pour ce plan de salle
       const state = getStore().getState().floorPlan.value;
       const existingTable = state.tables.find(
@@ -394,6 +544,7 @@ const mockFloorPlanService = {
       );
       
       if (existingTable) {
+        console.error(`[mockFloorPlanService] Table déjà existante: ${tableData.number}`);
         getStore().dispatch(setError(`La table n°${tableData.number} existe déjà sur ce plan`));
         getStore().dispatch(setLoading(false));
         return {
@@ -412,6 +563,7 @@ const mockFloorPlanService = {
         lastModifiedAt: new Date().toISOString(),
       };
       
+      // Utilisation de addTable
       getStore().dispatch(addTable(newTable));
       getStore().dispatch(setLoading(false));
       
@@ -422,6 +574,7 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la création de la table:', error);
       getStore().dispatch(setError('Erreur lors de la création de la table'));
       getStore().dispatch(setLoading(false));
       return {
@@ -439,10 +592,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingTable = state.tables.find(table => table._id === tableId);
       
       if (!existingTable) {
+        console.error(`[mockFloorPlanService] Table non trouvée lors de la mise à jour: ${tableId}`);
         getStore().dispatch(setError('Table non trouvée'));
         getStore().dispatch(setLoading(false));
         return {
@@ -461,6 +618,7 @@ const mockFloorPlanService = {
         );
         
         if (duplicateTable) {
+          console.error(`[mockFloorPlanService] Conflit de numéro de table: ${tableData.number}`);
           getStore().dispatch(setError(`La table n°${tableData.number} existe déjà sur ce plan`));
           getStore().dispatch(setLoading(false));
           return {
@@ -478,6 +636,7 @@ const mockFloorPlanService = {
         lastModifiedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateTable
       getStore().dispatch(updateTable(updatedTable));
       getStore().dispatch(setLoading(false));
       
@@ -488,6 +647,7 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour de la table:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour de la table'));
       getStore().dispatch(setLoading(false));
       return {
@@ -505,10 +665,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingTable = state.tables.find(table => table._id === tableId);
       
       if (!existingTable) {
+        console.error(`[mockFloorPlanService] Table non trouvée lors de la suppression: ${tableId}`);
         getStore().dispatch(setError('Table non trouvée'));
         getStore().dispatch(setLoading(false));
         return {
@@ -517,6 +681,7 @@ const mockFloorPlanService = {
         };
       }
       
+      // Utilisation de deleteTable
       getStore().dispatch(deleteTable(tableId));
       getStore().dispatch(setLoading(false));
       
@@ -525,6 +690,7 @@ const mockFloorPlanService = {
         message: 'Table supprimée avec succès',
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la suppression de la table:', error);
       getStore().dispatch(setError('Erreur lors de la suppression de la table'));
       getStore().dispatch(setLoading(false));
       return {
@@ -542,10 +708,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 200));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingTable = state.tables.find(table => table._id === tableId);
       
       if (!existingTable) {
+        console.error(`[mockFloorPlanService] Table non trouvée lors de la mise à jour de position: ${tableId}`);
         getStore().dispatch(setError('Table non trouvée'));
         getStore().dispatch(setLoading(false));
         return {
@@ -562,6 +732,7 @@ const mockFloorPlanService = {
         lastModifiedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateTable
       getStore().dispatch(updateTable(updatedTable));
       getStore().dispatch(setLoading(false));
       
@@ -572,6 +743,7 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour de la position:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour de la position de la table'));
       getStore().dispatch(setLoading(false));
       return {
@@ -589,10 +761,14 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 200));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const existingTable = state.tables.find(table => table._id === tableId);
       
       if (!existingTable) {
+        console.error(`[mockFloorPlanService] Table non trouvée lors de la mise à jour du statut: ${tableId}`);
         getStore().dispatch(setError('Table non trouvée'));
         getStore().dispatch(setLoading(false));
         return {
@@ -618,6 +794,7 @@ const mockFloorPlanService = {
         lastModifiedAt: new Date().toISOString(),
       };
       
+      // Utilisation de updateTable
       getStore().dispatch(updateTable(updatedTable));
       getStore().dispatch(setLoading(false));
       
@@ -628,22 +805,25 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la mise à jour du statut de la table:', error);
       getStore().dispatch(setError('Erreur lors de la mise à jour du statut de la table'));
       getStore().dispatch(setLoading(false));
       return {
         success: false,
         error: 'Erreur lors de la mise à jour du statut de la table',
       };
-    }
-  },
-  
-  // Créer plusieurs tables en une seule fois
+    
+
+      // Créer plusieurs tables en une seule fois
   createTablesBatch: async (tables, floorPlanId) => {
     try {
       getStore().dispatch(setLoading(true));
       
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
       
       const state = getStore().getState().floorPlan.value;
       
@@ -658,6 +838,7 @@ const mockFloorPlanService = {
       );
       
       if (duplicateNumbers.length > 0) {
+        console.error(`[mockFloorPlanService] Numéros de table en conflit: ${duplicateNumbers.join(', ')}`);
         getStore().dispatch(setError(`Numéros de table en conflit: ${duplicateNumbers.join(', ')}`));
         getStore().dispatch(setLoading(false));
         return {
@@ -675,10 +856,9 @@ const mockFloorPlanService = {
         lastModifiedAt: new Date().toISOString(),
       }));
       
-      // Ajouter chaque table au store
-      createdTables.forEach(table => {
-        getStore().dispatch(addTable(table));
-      });
+      // Ajouter toutes les tables d'un coup en utilisant setTables
+      const updatedTables = [...state.tables, ...createdTables];
+      getStore().dispatch(setTables(updatedTables));
       
       getStore().dispatch(setLoading(false));
       
@@ -687,6 +867,7 @@ const mockFloorPlanService = {
         data: createdTables,
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la création des tables en lot:', error);
       getStore().dispatch(setError('Erreur lors de la création des tables'));
       getStore().dispatch(setLoading(false));
       return {
@@ -704,8 +885,13 @@ const mockFloorPlanService = {
       // Simuler un délai réseau
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Initialiser le store si nécessaire
+      initializeStoreIfEmpty();
+      
       const state = getStore().getState().floorPlan.value;
       const tables = state.tables.filter(table => table.floorPlan === floorPlanId);
+      
+      console.log(`[mockFloorPlanService] Tables trouvées pour le plan ${floorPlanId}: ${tables.length}`);
       
       getStore().dispatch(setLoading(false));
       
@@ -716,6 +902,7 @@ const mockFloorPlanService = {
         },
       };
     } catch (error) {
+      console.error('[mockFloorPlanService] Erreur lors de la récupération des tables par plan:', error);
       getStore().dispatch(setError('Erreur lors de la récupération des tables'));
       getStore().dispatch(setLoading(false));
       return {
