@@ -1,6 +1,8 @@
 // src/services/mockTwoFactorService.js
 import { jwtDecode } from 'jwt-decode';
 
+let bypassSetupCheck = true; // Variable pour contourner la vérification en développement
+
 // Données utilisateur mockées (les mêmes que dans mockAuthService)
 const mockUsers = [
   {
@@ -142,6 +144,29 @@ const mockTwoFactorService = {
   verify2FASetup: async (token, code) => {
     await new Promise(resolve => setTimeout(resolve, 800));
     
+     // En mode développement, accepter toujours 123456 sans vérifier le secret
+  if (bypassSetupCheck && code === '123456') {
+    // Générer des codes de secours
+    const backupCodes = generateBackupCodes();
+
+    // Simuler la mise à jour de l'utilisateur
+    const userId = token || 'defaultUserId';
+    const userIndex = mockUsers.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+      mockUsers[userIndex].twoFactorEnabled = true;
+    }
+    
+    // Stocker les codes
+    tempState.backupCodes[userId] = backupCodes;
+    
+    return {
+      success: true,
+      data: {
+        backupCodes
+      }
+    };
+  }
+
     // Simuler la vérification du code (normalement via une bibliothèque OTP)
     // Accepter '123456' comme code valide pour le test
     if (code !== '123456') {

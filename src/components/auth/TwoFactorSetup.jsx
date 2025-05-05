@@ -1,12 +1,13 @@
+// src/components/auth/TwoFactorSetup.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { set2FASetupData, enable2FA } from '../../reducers/userSlice';
-// Import du service mock au lieu du service réel pendant le développement
+// Import direct du service mock
 import mockTwoFactorService from '../../services/mockTwoFactorService';
 import '../../styles/2fa.css';
 
-// Utiliser le service mock directement en développement
+// Utiliser le service mock pour le développement
 const twoFactorService = mockTwoFactorService;
 
 const TwoFactorSetup = () => {
@@ -81,9 +82,47 @@ const TwoFactorSetup = () => {
     }
   }, [dispatch, setupQRCode, setupSecret, currentStep]);
 
-  // Le reste du code reste inchangé...
+  // Gestion de la soumission du code de vérification
+  const handleVerifyCode = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!code.trim()) {
+      setError('Veuillez entrer le code d\'authentification');
+      return;
+    }
 
-  // Modifié pour utiliser les données locales si Redux échoue
+    try {
+      setIsLoading(true);
+      
+      // Utiliser le secret stocké soit dans Redux, soit localement
+      const secretToUse = setupSecret || localSetupData.secret;
+      
+      // Vérifier le code OTP
+      const result = await twoFactorService.verify2FASetup(secretToUse, code);
+      
+      if (result.success) {
+        // Activer 2FA et stocker les codes de secours
+        dispatch(enable2FA(result.data));
+        setSetupCompleted(true);
+        setCurrentStep(3);
+      } else {
+        setError(result.error || 'Code invalide');
+      }
+    } catch (error) {
+      console.error('2FA verification error:', error);
+      setError('Une erreur est survenue lors de la vérification');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Gestion du retour au dashboard après la configuration
+  const handleComplete = () => {
+    navigate('/dashboard');
+  };
+
+  // Rendu de l'étape 1: Configuration de l'application d'authentification
   const renderStep1 = () => (
     <div className="setup-step">
       <h3>Étape 1: Configuration de l'application d'authentification</h3>
@@ -114,7 +153,11 @@ const TwoFactorSetup = () => {
         <div className="qr-code-container">
           <img src={setupQRCode || localSetupData.qrCode} alt="QR Code pour authentification à deux facteurs" />
         </div>
-      ) : null}
+      ) : (
+        <div className="error-message">
+          Impossible de charger le QR code. Veuillez réessayer ou contacter l'assistance.
+        </div>
+      )}
 
       {(setupSecret || localSetupData.secret) && (
         <div className="secret-key">
@@ -126,7 +169,14 @@ const TwoFactorSetup = () => {
       <div className="form-actions">
         <button 
           className="btn btn-primary" 
-          onClick={() => setCurrentStep(2)}
+          onClick={() => {
+            console.log('Tentative de passage à l\'étape 2');
+            console.log('setupQRCode:', setupQRCode);
+            console.log('localSetupData.qrCode:', localSetupData.qrCode);
+            console.log('setupSecret:', setupSecret);
+            console.log('localSetupData.secret:', localSetupData.secret);
+            setCurrentStep(2);
+          }}
           disabled={(!setupQRCode && !localSetupData.qrCode) || (!setupSecret && !localSetupData.secret) || isLoading}
         >
           Continuer
@@ -135,7 +185,148 @@ const TwoFactorSetup = () => {
     </div>
   );
 
-  // Le reste du code reste inchangé...
+  // Rendu de l'étape 2: Vérification du code
+  const renderStep2 = () => (
+    <div className="setup-step">
+      <h3>Étape 2: Vérification du code</h3>
+      <p>
+        Veuillez entrer le code à 6 chiffres affiché dans votre application d'authentification pour vérifier que la configuration a bien été effectuée.
+      </p>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleVerifyCode}>
+        <div className="form-group">
+          <label htmlFor="code">Code d'authentification</label>
+          <input
+            type="text"
+            id="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Entrez le code à 6 chiffres"
+            maxLength="6"
+            autoFocus
+            disabled={isLoading}
+            required
+          />
+        </div>
+        
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setCurrentStep(1)}
+            disabled={isLoading}
+          >
+            Retour
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Vérification...' : 'Vérifier'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
+  // Rendu de l'étape 3: Configuration terminée
+  const renderStep3 = () => {
+    const { backupCodes } = useSelector(state => state.user.value);
+    
+    return (
+      <div className="setup-step">
+        <h3>Configuration terminée</h3>
+        <div className="success-message">
+          <p>L'authentification à deux facteurs a été activée avec succès sur votre compte.</p>
+        </div>
+
+        {backupCodes && backupCodes.length > 0 && (
+          <div className="backup-codes-container">
+            <h4>Codes de secours</h4>
+            <p>
+              Conservez ces codes de secours dans un endroit sûr. Ils vous permettront d'accéder à votre compte si vous n'avez pas accès à votre application d'authentification.
+            </p>
+            <div className="backup-codes-grid">
+              {backupCodes.map((code, index) => (
+                <div key={index} className="backup-code">
+                  {code}
+                </div>
+              ))}
+            </div>
+            <p className="warning">
+              <strong>Attention:</strong> Ces codes ne seront plus jamais affichés. Assurez-vous de les sauvegarder maintenant!
+            </p>
+            <button
+              className="btn btn-secondary"
+              onClick={() => window.print()}
+            >
+              Imprimer les codes
+            </button>
+          </div>
+        )}
+
+        <div className="form-actions">
+          <button 
+            className="btn btn-primary" 
+            onClick={handleComplete}
+          >
+            Terminer
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Affichage des étapes de configuration
+  const renderSetupProgress = () => (
+    <div className="setup-progress">
+      <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
+        Configuration
+      </div>
+      <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
+        Vérification
+      </div>
+      <div className={`progress-step ${currentStep >= 3 ? 'active' : ''}`}>
+        Terminé
+      </div>
+    </div>
+  );
+
+  // Pour les utilisateurs ADMIN et OWNER, afficher un message indiquant que 2FA est obligatoire
+  const renderRequiredMessage = () => {
+    if (['ADMIN', 'OWNER'].includes(role)) {
+      return (
+        <div className="required-notice">
+          <p>
+            <strong>Important:</strong> En tant que {role}, l'authentification à deux facteurs est obligatoire pour votre compte pour des raisons de sécurité.
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Configuration de l'authentification à deux facteurs</h2>
+        
+        {renderRequiredMessage()}
+        {renderSetupProgress()}
+        
+        {currentStep === 1 && renderStep1()}
+        {currentStep === 2 && renderStep2()}
+        {currentStep === 3 && renderStep3()}
+      </div>
+    </div>
+  );
 };
 
 export default TwoFactorSetup;
