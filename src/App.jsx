@@ -1,3 +1,5 @@
+// App.jsx avec debuggers et DataInitializer pour Vite
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -7,9 +9,16 @@ import './App.css';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Navbar from "./components/common/NavBar";
+
+// Importer les debuggers
 import TokenDebugger from "./components/common/debug/TokenDebugger";
 import StateDebugger from "./components/common/debug/StateDebugger";
+import AuthDebugger from "./components/common/debug/AuthDebugger";
+import DebugPanel from "./components/common/debug/DebugPanel";
+import FloorPlanDebugger from "./components/common/debug/FloorPlanDebugger"; // Si vous l'avez créé
 
+// Importer DataInitializer
+import DataInitializer from "./components/common/DataInitializer";
 
 // Composants pour la gestion du compte
 import TwoFactorSetup from './components/auth/TwoFactorSetup';
@@ -64,101 +73,112 @@ const RequiresTwoFactorCheck = ({children}) => {
 function App() {
   return (
    <Router>
-   <div className="app-container">
-     <Navbar />
-     <div className="main-content">
-      <Routes>
-        {/* Routes publiques */}
-        <Route path="/login" element={<Login/>} />
-        <Route path="/register" element={<Register/>} />
-        
-        {/* Route pour la gestion 2FA */}
-        <Route path="/2fa-management" element={
-          <PrivateRoute>
-            <TwoFactorManagement />
-          </PrivateRoute>
-        } />
+    <DataInitializer>
+      <div className="app-container">
+        <Navbar />
+        <div className="main-content">
+          <Routes>
+            {/* Routes publiques */}
+            <Route path="/login" element={<Login/>} />
+            <Route path="/register" element={<Register/>} />
+            
+            {/* Route pour la gestion 2FA */}
+            <Route path="/2fa-management" element={
+              <PrivateRoute>
+                <TwoFactorManagement />
+              </PrivateRoute>
+            } />
 
-        {/* Route pour la vérification 2FA */}
-        <Route path="/verify-2fa" element={
-          <Requires2FARoute>
-            <TwoFactorVerify />
-          </Requires2FARoute>
-        } />
+            {/* Route pour la vérification 2FA */}
+            <Route path="/verify-2fa" element={
+              <Requires2FARoute>
+                <TwoFactorVerify />
+              </Requires2FARoute>
+            } />
 
-        {/* Routes des plans de salle */}
-        <Route path="/floor-plans" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <FloorPlanList />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
-        
-        {/* Nouvelle route pour créer un plan de salle */}
-        <Route path="/create-floor-plan" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <CreateFloorPlan />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
-        
-        <Route path="/floor-plans/view/:floorPlanId" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <FloorPlanViewer />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
-        
-        <Route path="/floor-plans/edit/:floorPlanId" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <FloorPlanEditor />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
+            {/* Routes des plans de salle */}
+            <Route path="/floor-plans" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <FloorPlanList />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
+            
+            {/* Nouvelle route pour créer un plan de salle */}
+            <Route path="/create-floor-plan" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <CreateFloorPlan />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
+            
+            <Route path="/floor-plans/view/:floorPlanId" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <FloorPlanViewer />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
+            
+            <Route path="/floor-plans/edit/:floorPlanId" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <FloorPlanEditor />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
 
-        {/* Routes privées */}
-        <Route path="/dashboard" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <Dashboard />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
-        
-        <Route path="/account-settings" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <AccountSettings />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
+            {/* Routes privées */}
+            <Route path="/dashboard" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <Dashboard />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
+            
+            <Route path="/account-settings" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <AccountSettings />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
 
-        <Route path="/setup-2fa" element={
-          <PrivateRoute>
-            <TwoFactorSetup />
-          </PrivateRoute>
-        } />
+            <Route path="/setup-2fa" element={
+              <PrivateRoute>
+                <TwoFactorSetup />
+              </PrivateRoute>
+            } />
 
-        {/* Redirection de la racine vers le dashboard si connecté */}
-        <Route path="/" element={
-          <PrivateRoute>
-            <RequiresTwoFactorCheck>
-              <Dashboard />
-            </RequiresTwoFactorCheck>
-          </PrivateRoute>
-        } />
+            {/* Redirection de la racine vers le dashboard si connecté */}
+            <Route path="/" element={
+              <PrivateRoute>
+                <RequiresTwoFactorCheck>
+                  <Dashboard />
+                </RequiresTwoFactorCheck>
+              </PrivateRoute>
+            } />
 
-        {/* Page 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      {<StateDebugger />}
-      {/* <TokenDebugger />*/}
-    </div>
-    </div>
+            {/* Page 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          
+          {/* Ajouter les debuggers uniquement en mode développement */}
+          {import.meta.env.MODE !== 'production' && (
+            <>
+              <StateDebugger />
+              <TokenDebugger />
+              <AuthDebugger />
+              <DebugPanel />
+              <FloorPlanDebugger />
+            </>
+          )}
+        </div>
+      </div>
+    </DataInitializer>
    </Router>
   );
 }

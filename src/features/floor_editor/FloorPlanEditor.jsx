@@ -27,6 +27,7 @@ import '../../styles/FloorEditor.css';
 
 const FloorPlanEditor = () => {
     const { floorPlanId } = useParams();
+    console.log('[FloorPlanEditor] Rendu avec floorPlanId:', floorPlanId);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const stageRef = useRef(null);
@@ -54,10 +55,32 @@ const FloorPlanEditor = () => {
                 setIsLoading(true);
                 dispatch(setLoading(true));
                 
+                console.log(`[FloorPlanEditor] Tentative de chargement du plan ${floorPlanId}`);
+                
+                // ⚠️ NOUVEAU: Vérifier si le store Redux est vide
+                if (floorPlans.length === 0) {
+                    console.log("[FloorPlanEditor] Le store Redux est vide, chargement initial des plans...");
+                    const allPlansResponse = await services.floorPlan.getAllFloorPlans();
+                    
+                    if (!allPlansResponse.success) {
+                        const errorMsg = "Erreur lors du chargement initial des plans de salle";
+                        console.error(`[FloorPlanEditor] ${errorMsg}:`, allPlansResponse.error);
+                        setLocalError(errorMsg);
+                        dispatch(setError(errorMsg));
+                        setIsLoading(false);
+                        dispatch(setLoading(false));
+                        return;
+                    }
+                    
+                    console.log(`[FloorPlanEditor] ${allPlansResponse.data.floorPlans?.length || 0} plans chargés avec succès`);
+                }
+                
                 // Trouver le plan dans le store Redux
                 const foundFloorPlan = floorPlans.find(plan => plan._id === floorPlanId);
                 
                 if (foundFloorPlan) {
+                    console.log(`[FloorPlanEditor] Plan trouvé dans le store Redux: ${foundFloorPlan.name}`);
+                    
                     // Trouver les tables associées
                     const planTables = tables.filter(table => table.floorPlan === floorPlanId);
                     
@@ -68,20 +91,30 @@ const FloorPlanEditor = () => {
                     // Mettre à jour le plan actuel dans le store
                     dispatch(setCurrentFloorPlan(foundFloorPlan));
                 } else {
-                    // Si le plan n'est pas dans le store, essayer de le charger depuis le service
+                    // ⚠️ NOUVEAU: Logs améliorés et gestion d'erreurs plus robuste
+                    console.log(`[FloorPlanEditor] Plan ${floorPlanId} non trouvé dans le store, chargement depuis l'API...`);
                     const response = await services.floorPlan.getFloorPlanDetails(floorPlanId);
                     
                     if (response.success) {
+                        console.log(`[FloorPlanEditor] Plan chargé depuis l'API: ${response.data.floorPlan.name}`);
                         setFloorPlan(response.data.floorPlan);
-                        setCurrentTables(response.data.tables);
+                        setCurrentTables(response.data.tables || []);
                         setObstacles(response.data.floorPlan.obstacles || []);
+                        
+                        // Mettre à jour le store Redux avec le plan chargé
+                        dispatch(setCurrentFloorPlan(response.data.floorPlan));
                     } else {
-                        setLocalError(response.error || 'Erreur lors du chargement du plan de salle');
-                        dispatch(setError(response.error || 'Erreur lors du chargement du plan de salle'));
+                        const errorMsg = `Erreur lors du chargement du plan ${floorPlanId}`;
+                        console.error(`[FloorPlanEditor] ${errorMsg}:`, response.error);
+                        setLocalError(response.error || errorMsg);
+                        dispatch(setError(response.error || errorMsg));
                     }
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement du plan:', error);
+                // ⚠️ NOUVEAU: Logs d'erreurs améliorés
+                console.error('[FloorPlanEditor] Exception lors du chargement du plan:', error);
+                console.error('[FloorPlanEditor] Stack trace:', error.stack);
+                
                 setLocalError('Impossible de charger le plan de salle.');
                 dispatch(setError('Impossible de charger le plan de salle.'));
             } finally {
@@ -138,6 +171,8 @@ const FloorPlanEditor = () => {
     // Sauvegarde des modifications
     const handleSave = async () => {
         try {
+            console.log('[FloorPlanEditor] Sauvegarde des modifications...');
+            
             // Préparer les données du plan mis à jour
             const updatedFloorPlan = {
                 ...floorPlan,
@@ -149,22 +184,38 @@ const FloorPlanEditor = () => {
             dispatch(updateFloorPlan(updatedFloorPlan));
             
             // Sauvegarde du plan avec les obstacles via le service
-            await services.floorPlan.updateFloorPlan(floorPlanId, updatedFloorPlan);
+            const planResponse = await services.floorPlan.updateFloorPlan(floorPlanId, updatedFloorPlan);
+            
+            if (!planResponse.success) {
+                throw new Error(planResponse.error || 'Erreur lors de la sauvegarde du plan');
+            }
+            
+            console.log('[FloorPlanEditor] Plan sauvegardé avec succès, sauvegarde des tables...');
             
             // Sauvegarde des tables
-            for (const table of currentTables) {
+            const tablePromises = currentTables.map(table => {
                 // Dispatch action pour mettre à jour chaque table dans le store
                 dispatch(updateTable(table));
                 
                 // Sauvegarde de chaque table via le service
-                await services.table.updateTable(table._id, table);
+                return services.table.updateTable(table._id, table);
+            });
+            
+            // Attendre que toutes les tables soient sauvegardées
+            const tableResults = await Promise.allSettled(tablePromises);
+            
+            // Vérifier si toutes les tables ont été sauvegardées avec succès
+            const failedTables = tableResults.filter(result => result.status === 'rejected' || !result.value.success);
+            
+            if (failedTables.length > 0) {
+                console.warn('[FloorPlanEditor] Certaines tables n\'ont pas pu être sauvegardées:', failedTables);
             }
 
             // Notification et redirection
             alert('Plan de salle sauvegardé avec succès');
-            navigate('/floorPlans');
+            navigate('/floor-plans');
         } catch (error) {
-            console.error('Erreur lors de la sauvegarde:', error);
+            console.error('[FloorPlanEditor] Erreur lors de la sauvegarde:', error);
             setLocalError('Erreur lors de la sauvegarde. Veuillez réessayer.');
             dispatch(setError('Erreur lors de la sauvegarde. Veuillez réessayer.'));
         }
@@ -173,6 +224,8 @@ const FloorPlanEditor = () => {
     // Ajout d'une nouvelle table
     const handleAddTable = async (tableData) => {
         try {
+            console.log('[FloorPlanEditor] Ajout d\'une nouvelle table:', tableData);
+            
             // Préparer les données de la table
             const tableToAdd = {
                 number: currentTables.length + 1,
@@ -199,6 +252,8 @@ const FloorPlanEditor = () => {
             const response = await services.floorPlan.createTable(tableToAdd);
             
             if (response.success) {
+                console.log('[FloorPlanEditor] Table créée avec succès:', response.data.table);
+                
                 // Si l'ID renvoyé par le service est différent de l'ID temporaire
                 // mettre à jour l'ID dans l'état local et dans le store
                 if (response.data.table._id !== tempId) {
@@ -220,11 +275,12 @@ const FloorPlanEditor = () => {
                     dispatch(updateTable(tableWithRealId));
                 }
             } else {
+                console.error('[FloorPlanEditor] Erreur lors de la création de la table:', response.error);
                 setLocalError(response.error || 'Erreur lors de l\'ajout de la table');
                 dispatch(setError(response.error || 'Erreur lors de l\'ajout de la table'));
             }
         } catch (error) {
-            console.error('Erreur lors de l\'ajout de la table:', error);
+            console.error('[FloorPlanEditor] Exception lors de l\'ajout de la table:', error);
             setLocalError('Erreur lors de l\'ajout de la table');
             dispatch(setError('Erreur lors de l\'ajout de la table'));
         }
@@ -232,6 +288,8 @@ const FloorPlanEditor = () => {
 
     // Ajout d'un nouvel obstacle
     const handleAddObstacle = (obstacleData) => {
+        console.log('[FloorPlanEditor] Ajout d\'un nouvel obstacle:', obstacleData);
+        
         const newObstacle = {
             type: obstacleData.type || 'wall',
             position: obstacleData.position || { x: 100, y: 100 },
@@ -263,6 +321,8 @@ const FloorPlanEditor = () => {
 
         if (selectedElement.type === 'table') {
             try {
+                console.log('[FloorPlanEditor] Suppression de la table:', selectedElement._id);
+                
                 // Mettre à jour l'état local
                 const updatedTables = currentTables.filter(table => table._id !== selectedElement._id);
                 setCurrentTables(updatedTables);
@@ -272,13 +332,19 @@ const FloorPlanEditor = () => {
                 dispatch(deleteTable(selectedElement._id));
                 
                 // Supprimer la table via le service
-                await services.floorPlan.deleteTable(selectedElement._id);
+                const response = await services.floorPlan.deleteTable(selectedElement._id);
+                
+                if (!response.success) {
+                    console.warn('[FloorPlanEditor] Erreur lors de la suppression de la table:', response.error);
+                }
             } catch (error) {
-                console.error('Erreur lors de la suppression de la table:', error);
+                console.error('[FloorPlanEditor] Exception lors de la suppression de la table:', error);
                 setLocalError('Erreur lors de la suppression de la table');
                 dispatch(setError('Erreur lors de la suppression de la table'));
             }
         } else if (selectedElement.type === 'obstacle') {
+            console.log('[FloorPlanEditor] Suppression de l\'obstacle');
+            
             const index = obstacles.findIndex(obstacle =>
                 obstacle.position.x === selectedElement.position.x &&
                 obstacle.position.y === selectedElement.position.y);
@@ -339,12 +405,34 @@ const FloorPlanEditor = () => {
 
     // Afficher les erreurs
     if (localError || error) {
-        return <div className="error-message">{localError || error}</div>;
+        return (
+            <div className="error-message">
+                <h3>Erreur</h3>
+                <p>{localError || error}</p>
+                <button 
+                    className="btn btn-primary"
+                    onClick={() => navigate('/floor-plans')}
+                >
+                    Retour à la liste des plans
+                </button>
+            </div>
+        );
     }
 
     // Vérifier si le plan existe
     if (!floorPlan) {
-        return <div>Aucun plan de salle trouvé</div>;
+        return (
+            <div className="error-message">
+                <h3>Plan de salle non trouvé</h3>
+                <p>Le plan de salle avec l'ID "{floorPlanId}" n'existe pas ou n'a pas pu être chargé.</p>
+                <button 
+                    className="btn btn-primary"
+                    onClick={() => navigate('/floor-plans')}
+                >
+                    Retour à la liste des plans
+                </button>
+            </div>
+        );
     }
 
     return (
