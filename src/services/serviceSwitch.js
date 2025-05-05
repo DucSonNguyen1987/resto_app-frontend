@@ -1,6 +1,7 @@
 // src/services/serviceSwitch.js
 import mockFloorPlanService from './mockFloorPlanService';
 import apiFloorPlanService from './apiFloorPlanService';
+import mockReservationService from './mockReservationService'; // Ajout de l'import
 
 // Configuration qui détermine si on utilise les services mockés ou réels
 // Cette valeur peut être définie dans un fichier de configuration ou des variables d'environnement
@@ -17,12 +18,16 @@ const USE_MOCK_SERVICES = import.meta.env.REACT_APP_USE_MOCK_SERVICES === 'true'
 // Services mockés pour le développement
 const mockServices = {
   floorPlan: mockFloorPlanService,
+  // Ajouter le service de réservation au service mocké
+  reservation: mockReservationService,
   // Pas besoin de définir explicitement table car mockFloorPlanService contient déjà les méthodes pour les tables
 };
 
 // Services API réels pour la production
 const apiServices = {
   floorPlan: apiFloorPlanService,
+  // TODO: Ajouter le service réel de réservation quand il sera disponible
+  reservation: null, // À remplacer par le service réel quand il sera disponible
   // Pas besoin de définir explicitement table car apiFloorPlanService contient déjà les méthodes pour les tables
 };
 

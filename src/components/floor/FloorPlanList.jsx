@@ -88,9 +88,48 @@ const FloorPlanList = () => {
     }
   };
   
-  // Naviguer vers l'éditeur de plan
-  const handleEditPlan = (floorPlanId) => {
-    navigate(`/floor-plans/edit/${floorPlanId}`);
+  const handleEditPlan = async (floorPlanId) => {
+    try {
+      console.log(`[FloorPlanList] Préparation de l'édition du plan: ${floorPlanId}`);
+      setIsLoading(true);
+      
+      // Forcer le chargement des détails du plan avant de rediriger
+      const response = await services.floorPlan.getFloorPlanDetails(floorPlanId);
+      
+      if (!response.success) {
+        console.error(`[FloorPlanList] Erreur lors du chargement du plan ${floorPlanId}:`, response.error);
+        setError(response.error || 'Erreur lors du chargement des détails du plan');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log(`[FloorPlanList] Plan ${floorPlanId} chargé avec succès:`, response.data);
+      
+      // Vérifier que les données nécessaires sont présentes
+      if (!response.data.floorPlan) {
+        console.error(`[FloorPlanList] Les données du plan ${floorPlanId} sont incomplètes ou invalides`);
+        setError('Données du plan incomplètes');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Stocker temporairement les données dans le localStorage pour assurer leur disponibilité
+      // même en cas de problème avec Redux
+      localStorage.setItem('currentFloorPlan', JSON.stringify(response.data.floorPlan));
+      localStorage.setItem('currentFloorPlanTables', JSON.stringify(response.data.tables || []));
+      
+      // Ajouter un petit délai pour s'assurer que Redux a le temps de traiter les données
+      setTimeout(() => {
+        // Maintenant que les détails sont chargés, naviguer vers l'éditeur
+        console.log(`[FloorPlanList] Redirection vers l'éditeur pour le plan: ${floorPlanId}`);
+        setIsLoading(false);
+        navigate(`/floor-plans/edit/${floorPlanId}`);
+      }, 300);
+    } catch (error) {
+      console.error(`[FloorPlanList] Exception lors du préchargement du plan ${floorPlanId}:`, error);
+      setError('Impossible de charger les détails du plan pour l\'édition');
+      setIsLoading(false);
+    }
   };
   
   // Naviguer vers la visualisation du plan

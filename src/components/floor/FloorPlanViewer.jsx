@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect, Group, Text, Line } from 'react-konva';
 import services from '../../services/serviceSwitch';
+import mockReservationService from '../../services/mockReservationService'; // Ajout d'un import direct
+
 
 // Composants
 import TableShape from '../../features/floor_editor/TableShape';
@@ -68,18 +70,35 @@ const FloorPlanViewer = () => {
         // Formater la date au format YYYY-MM-DD
         const dateString = selectedDate.toISOString().split('T')[0];
         
-        const response = await services.reservation.getReservations({
-          date: dateString,
-          floorPlan: floorPlanId
-        });
-        
-        if (response.success) {
-          setReservations(response.data);
+        // Vérification de l'existence du service avant utilisation
+        if (!services.reservation) {
+          console.log('Service de réservation non disponible dans services, utilisation du mockReservationService');
           
-          // Mettre à jour le statut des tables en fonction des réservations
-          updateTableStatus(response.data);
+          // Utiliser directement le service mockée comme fallback
+          const response = await mockReservationService.getAllReservations({
+            date: dateString,
+            floorPlan: floorPlanId
+          });
+          
+          if (response.success) {
+            setReservations(response.data);
+            updateTableStatus(response.data);
+          } else {
+            console.error('Erreur lors du chargement des réservations:', response.error);
+          }
         } else {
-          console.error('Erreur lors du chargement des réservations:', response.error);
+          // Utiliser le service depuis l'objet services si disponible
+          const response = await services.reservation.getReservations({
+            date: dateString,
+            floorPlan: floorPlanId
+          });
+          
+          if (response.success) {
+            setReservations(response.data);
+            updateTableStatus(response.data);
+          } else {
+            console.error('Erreur lors du chargement des réservations:', response.error);
+          }
         }
       } catch (error) {
         console.error('Erreur lors du chargement des réservations:', error);
