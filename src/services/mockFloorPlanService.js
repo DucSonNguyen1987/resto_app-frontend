@@ -6,7 +6,7 @@ import {
   updateFloorPlan,
   deleteFloorPlan,
   setCurrentFloorPlan,
-  setTables,  // Assurez-vous que cette action existe dans votre slice
+  setTables,
   addTable,
   updateTable,
   deleteTable,
@@ -812,9 +812,10 @@ const mockFloorPlanService = {
         success: false,
         error: 'Erreur lors de la mise à jour du statut de la table',
       };
-    
-
-      // Créer plusieurs tables en une seule fois
+    }
+  },
+  
+  // Créer plusieurs tables en une seule fois
   createTablesBatch: async (tables, floorPlanId) => {
     try {
       getStore().dispatch(setLoading(true));
@@ -910,7 +911,7 @@ const mockFloorPlanService = {
         error: 'Erreur lors de la récupération des tables',
       };
     }
-  },
+  }
 };
 
 export default mockFloorPlanService;

@@ -35,7 +35,7 @@ const NavBar = () => {
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="navbar-brand">
-          Restaurant Manager
+          Restaurant App
         </Link>
 
         <div className="nav-links">

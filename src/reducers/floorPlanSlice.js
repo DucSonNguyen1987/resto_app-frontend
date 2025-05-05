@@ -146,14 +146,19 @@ export const floorPlanSlice = createSlice({
         };
       }
     },
-    
+
+
     // Supprimer une table
     deleteTable: (state, action) => {
       state.value.tables = state.value.tables.filter(
-        (table) => table._id !== action.payload
+      (table) => table._id !== action.payload
       );
     },
-    
+
+    // Définir les tables
+    setTables: (state, action) => {
+      state.value.tables = action.payload;
+    },
     // Mettre à jour les états de chargement et d'erreur
     setLoading: (state, action) => {
       state.value.loading = action.payload;
@@ -172,6 +177,7 @@ export const {
   deleteFloorPlan,
   setCurrentFloorPlan,
   addTable,
+  setTables,
   updateTable,
   deleteTable,
   setLoading,
