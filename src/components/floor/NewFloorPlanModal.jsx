@@ -1,6 +1,6 @@
 // src/components/floor/NewFloorPlanModal.jsx
 import React, { useState } from 'react';
-//import FloorPlanEditor from '../../features/floor_editor/FloorPlanEditor';
+import FloorPlanEditor from '../../features/floor_editor/FloorPlanEditor';
 import SeatingEditor from '../../features/floor_editor/SeatingEditor';
 
 

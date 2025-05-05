@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-//import services from '../../services/serviceSwitch';
+import services from '../../../services/serviceSwitch';
 
 const DebugPanel = () => {
   const auth = useSelector(state => state.user.value);

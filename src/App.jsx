@@ -7,7 +7,7 @@ import './App.css';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Navbar from "./components/common/NavBar";
-//import TokenDebugger from "./components/common/debug/TokenDebugger";
+import TokenDebugger from "./components/common/debug/TokenDebugger";
 import StateDebugger from "./components/common/debug/StateDebugger";
 
 

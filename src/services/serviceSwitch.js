@@ -1,25 +1,20 @@
+// src/services/serviceSwitch.js
 import mockAuthService from './mockAuthService';
 import mockTwoFactorService from './mockTwoFactorService';
 import mockFloorPlanService from './mockFloorPlanService';
 import mockTableService from './mockTableService';
 import mockReservationService from './mockReservationService';
 
-import authService from './authService';
-import twoFactorService from './twoFactorService';
-import floorPlanService from './floorPlanService';
-import tableService from './tableService';
-import reservationService from './reservationService';
-
-// Vérifier si on utilise les services mock ou réels
-const useMock = import.meta.env.VITE_USE_MOCK_SERVICES === 'true';
+// Forcer l'utilisation des services mock pour le développement
+const useMock = true; // Remplacer par import.meta.env.VITE_USE_MOCK_SERVICES === 'true'; en production
 
 // Exporter les services appropriés
 const services = {
-  auth: useMock ? mockAuthService : authService,
-  twoFactor: useMock ? mockTwoFactorService : twoFactorService,
-  floorPlan: useMock ? mockFloorPlanService : floorPlanService,
-  table: useMock ? mockTableService : tableService,
-  reservation: useMock ? mockReservationService : reservationService,
+  auth: useMock ? mockAuthService : null,
+  twoFactor: useMock ? mockTwoFactorService : null,
+  floorPlan: useMock ? mockFloorPlanService : null,
+  table: useMock ? mockTableService : null,
+  reservation: useMock ? mockReservationService : null,
 };
 
 export default services;

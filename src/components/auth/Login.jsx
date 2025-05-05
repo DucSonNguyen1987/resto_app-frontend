@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../../reducers/userSlice';
 import { loginUser } from '../../actions/authActions';
 import '../../styles/2fa.css';
 
