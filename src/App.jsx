@@ -22,7 +22,7 @@ import FloorPlanList from './components/floor/FloorPlanList';
 import FloorPlanViewer from './components/floor/FloorPlanViewer';
 import FloorPlanEditor from './features/floor_editor/FloorPlanEditor';
 // Importer le nouveau composant de création de plan
-import CreateFloorPlan from './features/floor_plans/CreateFloorPlan';
+import CreateFloorPlan from './features/floor_editor/floor_plans/CreateFloorPlan';
 
 // Dashboard
 import Dashboard from './components/dashboard/Dashboard';

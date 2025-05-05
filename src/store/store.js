@@ -45,6 +45,10 @@ export const store = configureStore({
 import { injectStore } from '../api/axios';
 injectStore(store);
 
+
 // Create the persistor for redux persist
 export const persistor = persistStore(store);
+
+export const getStore = () => store;
+
 

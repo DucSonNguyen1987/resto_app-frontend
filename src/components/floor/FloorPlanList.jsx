@@ -31,7 +31,9 @@ const FloorPlanList = () => {
         console.log('Permissions utilisateur:', user.role);
 
         if (response.success) {
-          setFloorPlans(response.data);
+          // Correction ici: accéder à response.data.floorPlans au lieu de response.data
+          setFloorPlans(response.data.floorPlans);
+          console.log('Plans chargés:', response.data.floorPlans);
         } else {
           console.error('Erreur de réponse:', response.error);
           setError(response.error || 'Erreur lors du chargement des plans de salle');
@@ -119,19 +121,8 @@ const FloorPlanList = () => {
         )}
       </div>
       
-      {floorPlans.length === 0 ? (
-        <div className="empty-state">
-          <p>Aucun plan de salle disponible</p>
-          {canCreatePlan && (
-            <button
-              className="btn btn-outline-primary"
-              onClick={() => setShowNewPlanModal(true)}
-            >
-              Créer votre premier plan de salle
-            </button>
-          )}
-        </div>
-      ) : (
+      {/* Vérification améliorée avant d'utiliser .map() */}
+      {Array.isArray(floorPlans) && floorPlans.length > 0 ? (
         <div className="floor-plans-grid">
           {floorPlans.map(plan => (
             <div
@@ -192,6 +183,18 @@ const FloorPlanList = () => {
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <p>Aucun plan de salle disponible</p>
+          {canCreatePlan && (
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => setShowNewPlanModal(true)}
+            >
+              Créer votre premier plan de salle
+            </button>
+          )}
         </div>
       )}
       

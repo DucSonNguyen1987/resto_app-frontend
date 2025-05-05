@@ -7,12 +7,12 @@ import apiFloorPlanService from './apiFloorPlanService';
 // Par défaut, on utilise les services mockés pour le développement
 
 // Vérifier si nous sommes en environnement de production
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = import.meta.env.NODE_ENV === 'production';
 
 // Utiliser les services API en production, et les services mockés en développement
 // Cette configuration peut être écrasée par une variable d'environnement
-const USE_MOCK_SERVICES = process.env.REACT_APP_USE_MOCK_SERVICES === 'true' || 
-                         (!isProduction && process.env.REACT_APP_USE_MOCK_SERVICES !== 'false');
+const USE_MOCK_SERVICES = import.meta.env.REACT_APP_USE_MOCK_SERVICES === 'true' || 
+                         (!isProduction && import.meta.env.REACT_APP_USE_MOCK_SERVICES !== 'false');
 
 // Services mockés pour le développement
 const mockServices = {
